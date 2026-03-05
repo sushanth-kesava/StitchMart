@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingCart, Search, User as UserIcon, Menu, Bell, Heart } from "lucide-react";
+import { ShoppingCart, Search, User as UserIcon, Menu, Bell, Heart, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,6 +18,10 @@ import { CURRENT_USER } from "@/app/lib/mock-data";
 
 export function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  // For the purpose of this UI demo, we'll assume "logged out" state 
+  // can be toggled or simulated. For now, we'll keep the CURRENT_USER 
+  // but also show Login/Signup if needed.
+  const isLoggedIn = true; // Toggle this to false to see logged out state
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -58,7 +62,7 @@ export function Navbar() {
             <Search className="h-5 w-5" />
           </Button>
           
-          <Button variant="ghost" size="icon" className="relative">
+          <Button variant="ghost" size="icon" className="relative hidden sm:flex">
             <Heart className="h-5 w-5" />
           </Button>
 
@@ -71,39 +75,50 @@ export function Navbar() {
             </Button>
           </Link>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full overflow-hidden border">
-                <UserIcon className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>
-                <div className="flex flex-col">
-                  <span>{CURRENT_USER.name}</span>
-                  <span className="text-xs font-normal text-muted-foreground">{CURRENT_USER.email}</span>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/portal/customer">My Portal</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/portal/customer/orders">Orders</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/portal/customer/downloads">Downloads</Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              {CURRENT_USER.role === 'customer' && (
+          {isLoggedIn ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full overflow-hidden border">
+                  <UserIcon className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col">
+                    <span>{CURRENT_USER.name}</span>
+                    <span className="text-xs font-normal text-muted-foreground">{CURRENT_USER.email}</span>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/portal/dealer/register" className="text-primary font-medium">Become a Dealer</Link>
+                  <Link href="/portal/customer">My Portal</Link>
                 </DropdownMenuItem>
-              )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">Logout</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <DropdownMenuItem asChild>
+                  <Link href="/portal/customer/orders">Orders</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/portal/customer/downloads">Downloads</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {CURRENT_USER.role === 'customer' && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/portal/dealer/register" className="text-primary font-medium">Become a Dealer</Link>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-destructive">Logout</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" asChild className="hidden sm:flex">
+                <Link href="/login">Log In</Link>
+              </Button>
+              <Button size="sm" asChild className="rounded-full px-5">
+                <Link href="/signup">Sign Up</Link>
+              </Button>
+            </div>
+          )}
 
           <Button variant="ghost" size="icon" className="md:hidden">
             <Menu className="h-5 w-5" />
