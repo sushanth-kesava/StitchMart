@@ -1,13 +1,47 @@
+
+"use client";
+
 import { Navbar } from "@/components/navbar";
 import { Hero } from "@/components/hero";
 import { ProductCard } from "@/components/product-card";
-import { MOCK_PRODUCTS, CATEGORIES } from "@/app/lib/mock-data";
+import { CATEGORIES, Product } from "@/app/lib/mock-data";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Zap, ShieldCheck, Truck, RefreshCcw } from "lucide-react";
+import { ChevronRight, Zap, ShieldCheck, Truck, RefreshCcw, Database } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { getProducts } from "@/lib/firebase/services";
+import { runSeeding } from "./actions/seed";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
-  const featuredProducts = MOCK_PRODUCTS.slice(0, 4);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const data = await getProducts();
+        setFeaturedProducts(data.slice(0, 4));
+      } catch (error) {
+        console.error("Failed to load products", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
+
+  const handleSeed = async () => {
+    const res = await runSeeding();
+    toast({
+      title: res.success ? "Success" : "Info",
+      description: res.message,
+    });
+    // Refresh data
+    const data = await getProducts();
+    setFeaturedProducts(data.slice(0, 4));
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -25,7 +59,7 @@ export default function Home() {
                 <p className="text-muted-foreground">Find specialized tools and materials for your embroidery business.</p>
               </div>
               <Button variant="link" className="text-primary font-semibold" asChild>
-                <Link href="/categories">View All Categories <ChevronRight className="h-4 w-4 ml-1" /></Link>
+                <Link href="/marketplace">View All Categories <ChevronRight className="h-4 w-4 ml-1" /></Link>
               </Button>
             </div>
             
@@ -51,22 +85,39 @@ export default function Home() {
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between mb-10">
               <h2 className="text-4xl font-bold font-headline">Bestsellers in India</h2>
-              <div className="hidden sm:flex items-center gap-2">
-                <Button variant="outline" size="sm" className="rounded-full">Latest</Button>
-                <Button variant="outline" size="sm" className="rounded-full">Most Popular</Button>
-                <Button variant="outline" size="sm" className="rounded-full">Trending</Button>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="rounded-full gap-2 border-dashed border-primary text-primary"
+                  onClick={handleSeed}
+                >
+                  <Database className="h-4 w-4" /> Seed DB
+                </Button>
+                <div className="hidden sm:flex items-center gap-2">
+                  <Button variant="outline" size="sm" className="rounded-full">Latest</Button>
+                  <Button variant="outline" size="sm" className="rounded-full">Trending</Button>
+                </div>
               </div>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {featuredProducts.map(product => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="aspect-square bg-muted animate-pulse rounded-3xl" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                {featuredProducts.map(product => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            )}
             
             <div className="mt-12 text-center">
-              <Button size="lg" variant="outline" className="rounded-full border-primary text-primary px-10">
-                Explore Full Marketplace
+              <Button size="lg" variant="outline" className="rounded-full border-primary text-primary px-10" asChild>
+                <Link href="/marketplace">Explore Full Marketplace</Link>
               </Button>
             </div>
           </div>

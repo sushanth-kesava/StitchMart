@@ -1,23 +1,41 @@
+
 "use client";
 
 import { Navbar } from "@/components/navbar";
 import { ProductCard } from "@/components/product-card";
-import { MOCK_PRODUCTS, CATEGORIES } from "@/app/lib/mock-data";
+import { CATEGORIES, Product } from "@/app/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Filter, Search, ChevronDown, SlidersHorizontal } from "lucide-react";
-import { useState } from "react";
+import { Filter, Search, ChevronDown, RefreshCw } from "lucide-react";
+import { useState, useEffect } from "react";
+import { getProducts } from "@/lib/firebase/services";
 
 export default function Marketplace() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredProducts = MOCK_PRODUCTS.filter(p => {
-    const matchesCategory = selectedCategory ? p.category === selectedCategory : true;
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      try {
+        const data = await getProducts(selectedCategory);
+        setProducts(data);
+      } catch (error) {
+        console.error("Failed to fetch products:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, [selectedCategory]);
+
+  const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           p.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    return matchesSearch;
   });
 
   return (
@@ -69,7 +87,12 @@ export default function Marketplace() {
             ))}
           </div>
 
-          {filteredProducts.length > 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-32 space-y-4">
+              <RefreshCw className="h-12 w-12 text-primary animate-spin" />
+              <p className="text-muted-foreground font-medium">Loading premium catalogue...</p>
+            </div>
+          ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {filteredProducts.map(product => (
                 <ProductCard key={product.id} product={product} />
