@@ -53,4 +53,4 @@ git commit -m "Initial commit: StitchMart Embroidery Marketplace"
 git branch -M main
 git remote add origin https://github.com/sushanth-kesava/StitchMart.git
 git push -u origin main
-```
+```# StitchMart
