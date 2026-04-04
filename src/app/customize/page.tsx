@@ -5,31 +5,36 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Palette, Check, ArrowRight, Upload } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { embroideryDesignVisualizer } from "@/ai/flows/embroidery-design-visualizer";
 import Image from "next/image";
-import { useFirestore, useCollection } from "@/firebase";
-import { collection, query, where } from "firebase/firestore";
 import { Product } from "@/app/lib/mock-data";
+import { getProductsFromBackend } from "@/lib/api/products";
 
 export default function CustomizePage() {
-  const db = useFirestore();
   const [selectedGarment, setSelectedGarment] = useState<Product | null>(null);
   const [selectedDesign, setSelectedDesign] = useState<Product | null>(null);
   const [visualizing, setVisualizing] = useState(false);
   const [visualizedImg, setVisualizedImg] = useState<string | null>(null);
+  const [apparel, setApparel] = useState<Product[]>([]);
+  const [designs, setDesigns] = useState<Product[]>([]);
 
-  // Fetch customizable apparel (Hoodies, Blouses)
-  const apparelQuery = useMemo(() => {
-    return query(collection(db, "products"), where("customizable", "==", true));
-  }, [db]);
-  const { data: apparel } = useCollection<Product>(apparelQuery);
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [apparelData, designData] = await Promise.all([
+          getProductsFromBackend({ customizable: true }),
+          getProductsFromBackend({ category: "Embroidery Designs" }),
+        ]);
+        setApparel(apparelData);
+        setDesigns(designData);
+      } catch (error) {
+        console.error("Failed to load customization data", error);
+      }
+    };
 
-  // Fetch embroidery designs
-  const designsQuery = useMemo(() => {
-    return query(collection(db, "products"), where("category", "==", "Embroidery Designs"));
-  }, [db]);
-  const { data: designs } = useCollection<Product>(designsQuery);
+    void loadData();
+  }, []);
 
   const handleVisualize = async () => {
     if (!selectedGarment || !selectedDesign) return;
@@ -74,7 +79,7 @@ export default function CustomizePage() {
                   Choose Base Garment
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
-                  {apparel?.map((item) => (
+                  {apparel.map((item) => (
                     <button
                       key={item.id}
                       onClick={() => { setSelectedGarment(item); setVisualizedImg(null); }}
@@ -95,7 +100,7 @@ export default function CustomizePage() {
                   Choose Embroidery Design
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
-                  {designs?.slice(0, 4).map((item) => (
+                  {designs.slice(0, 4).map((item) => (
                     <button
                       key={item.id}
                       onClick={() => { setSelectedDesign(item); setVisualizedImg(null); }}

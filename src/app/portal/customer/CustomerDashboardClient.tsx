@@ -9,8 +9,9 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MOCK_PRODUCTS } from "@/app/lib/mock-data";
+import { getMyOrdersFromBackend } from "@/lib/api/orders";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
 
 export default function CustomerDashboardClient({ recommendations }: any) {
   const router = useRouter();
@@ -21,9 +22,6 @@ export default function CustomerDashboardClient({ recommendations }: any) {
   useEffect(() => {
     const loadSession = async () => {
       setMounted(true);
-
-      const savedOrders = JSON.parse(localStorage.getItem('stitchmart_orders') || '[]');
-      setOrders(savedOrders);
 
       const token = localStorage.getItem("app_auth_token");
 
@@ -47,6 +45,8 @@ export default function CustomerDashboardClient({ recommendations }: any) {
 
             setUser(mappedUser);
             localStorage.setItem("google_auth_user", JSON.stringify(data.user));
+            const backendOrders = await getMyOrdersFromBackend(token);
+            setOrders(backendOrders);
             return;
           }
 
@@ -248,12 +248,12 @@ export default function CustomerDashboardClient({ recommendations }: any) {
                       {orders.map((order, i) => (
                         <tr key={i} className="hover:bg-gray-50/50 transition-colors">
                           <td className="px-6 py-5 font-mono font-medium text-gray-900">{order.id}</td>
-                          <td className="px-6 py-5 text-muted-foreground">{order.date}</td>
+                          <td className="px-6 py-5 text-muted-foreground">{new Date(order.createdAt).toLocaleDateString()}</td>
                           <td className="px-6 py-5">
                             <Badge className="bg-green-500/10 text-green-700 border-none shadow-none">{order.status}</Badge>
                           </td>
                           <td className="px-6 py-5 font-medium">{order.items?.length || 0}</td>
-                          <td className="px-6 py-5 font-bold text-gray-900">${parseFloat(order.total).toFixed(2)}</td>
+                          <td className="px-6 py-5 font-bold text-gray-900">${Number(order.total).toFixed(2)}</td>
                           <td className="px-6 py-5 text-right">
                             <Button variant="secondary" size="sm" className="rounded-full shadow-sm">Details</Button>
                           </td>

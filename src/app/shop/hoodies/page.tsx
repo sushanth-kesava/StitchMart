@@ -3,30 +3,34 @@
 import { Navbar } from "@/components/navbar";
 import { ProductCard } from "@/components/product-card";
 import { Product } from "@/app/lib/mock-data";
-import { Button } from "@/components/ui/badge";
 import { Search, RefreshCw, Sparkles } from "lucide-react";
-import { useState, useMemo } from "react";
-import { useFirestore, useCollection } from "@/firebase";
-import { collection, query, where, orderBy } from "firebase/firestore";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { getProductsFromBackend } from "@/lib/api/products";
 
 export default function HoodieCatalog() {
-  const db = useFirestore();
   const [searchQuery, setSearchQuery] = useState("");
+  const [hoodies, setHoodies] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const hoodiesQuery = useMemo(() => {
-    return query(
-      collection(db, "products"), 
-      where("category", "==", "Hoodies"),
-      orderBy("createdAt", "desc")
-    );
-  }, [db]);
+  useEffect(() => {
+    const loadHoodies = async () => {
+      setLoading(true);
+      try {
+        const data = await getProductsFromBackend({ category: "Hoodies" });
+        setHoodies(data);
+      } catch (error) {
+        console.error("Failed to load hoodies", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const { data: hoodies, loading } = useCollection<Product>(hoodiesQuery);
+    void loadHoodies();
+  }, []);
 
-  const filteredHoodies = hoodies?.filter(p => 
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    p.description.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredHoodies = hoodies.filter(
+    (p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (

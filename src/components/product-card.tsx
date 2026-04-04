@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ShoppingCart, Heart, Star, Download } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { addProductToCart } from "@/lib/cart";
 
 interface ProductCardProps {
   product: Product;
@@ -57,8 +58,17 @@ export function ProductCard({ product }: ProductCardProps) {
       </CardContent>
       
       <CardFooter className="p-4 pt-0">
-        <Button className="w-full gap-2 rounded-full font-semibold shadow-sm hover:shadow-md transition-all active:scale-95" variant="default" asChild>
-          <Link href="/cart">
+        <Button
+          className="w-full gap-2 rounded-full font-semibold shadow-sm hover:shadow-md transition-all active:scale-95"
+          variant="default"
+          asChild
+        >
+          <Link
+            href="/cart"
+            onClick={() => {
+              addProductToCart(product, 1);
+            }}
+          >
             <ShoppingCart className="h-4 w-4" />
             Add to Cart
           </Link>

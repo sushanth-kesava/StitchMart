@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 import { googleLogout } from '@react-oauth/google';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
 
 function clearLocalSession() {
   localStorage.removeItem('app_auth_token');
@@ -150,8 +150,8 @@ export function Navbar() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild className="rounded-xl p-3 cursor-pointer">
-                  <Link href="/portal/customer">My Portal</Link>
+                  <DropdownMenuItem asChild className="rounded-xl p-3 cursor-pointer">
+                    <Link href={user.role === "admin" ? "/portal/admin" : "/portal/customer"}>My Portal</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="rounded-xl p-3 cursor-pointer">
                   <Link href="/customize" className="text-primary font-bold">AI Design Drafts</Link>

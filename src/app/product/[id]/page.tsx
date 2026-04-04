@@ -16,19 +16,36 @@ import {
   AlertCircle
 } from "lucide-react";
 import Image from "next/image";
-import { useState, use, useMemo } from "react";
+import { useState, use, useEffect } from "react";
 import { embroideryDesignVisualizer } from "@/ai/flows/embroidery-design-visualizer";
-import { useFirestore, useDoc } from "@/firebase";
-import { doc } from "firebase/firestore";
 import { Product } from "@/app/lib/mock-data";
 import Link from "next/link";
+import { getProductByIdFromBackend } from "@/lib/api/products";
+import { addProductToCart } from "@/lib/cart";
 
 export default function ProductDetails({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const db = useFirestore();
-  
-  const productRef = useMemo(() => doc(db, "products", id) as any, [db, id]);
-  const { data: product, loading, error } = useDoc<Product>(productRef);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadProduct = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const data = await getProductByIdFromBackend(id);
+        setProduct(data);
+      } catch (err: any) {
+        setError(err?.message || "Failed to load product");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadProduct();
+  }, [id]);
 
   const [visualizing, setVisualizing] = useState(false);
   const [visualizedImg, setVisualizedImg] = useState<string | null>(null);
@@ -114,6 +131,9 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
               {[product.image, "https://picsum.photos/seed/alt1/600/600", "https://picsum.photos/seed/alt2/600/600"].map((img, i) => (
                 <button 
                   key={i}
+                  type="button"
+                  title={`Preview image ${i + 1}`}
+                  aria-label={`Preview image ${i + 1}`}
                   onClick={() => setVisualizedImg(null)}
                   className="relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-primary transition-all opacity-80 hover:opacity-100"
                 >
@@ -147,13 +167,28 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
 
             <div className="p-8 rounded-[32px] bg-card border border-border/50 shadow-sm space-y-8">
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button asChild size="lg" variant="outline" className="flex-1 h-14 rounded-2xl text-lg font-bold border-primary/40 text-primary hover:bg-primary/5 transition-all">
-                  <Link href="/cart">
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="flex-1 h-14 rounded-2xl text-lg font-bold border-primary/40 text-primary hover:bg-primary/5 transition-all"
+                >
+                  <Link
+                    href="/cart"
+                    onClick={() => {
+                      addProductToCart(product, 1);
+                    }}
+                  >
                     <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
                   </Link>
                 </Button>
                 <Button asChild size="lg" className="flex-1 h-14 rounded-2xl text-lg font-bold shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all">
-                  <Link href="/cart">
+                  <Link
+                    href="/cart"
+                    onClick={() => {
+                      addProductToCart(product, 1);
+                    }}
+                  >
                     Buy Now
                   </Link>
                 </Button>

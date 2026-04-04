@@ -1,25 +1,24 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/navbar";
-import { useFirestore, useCollection } from "@/firebase";
-import { collection, addDoc, serverTimestamp, query, where, deleteDoc, doc } from "firebase/firestore";
-import { CATEGORIES } from "@/app/lib/mock-data";
+import { CATEGORIES, Product } from "@/app/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { LayoutDashboard, PlusCircle, PackageCheck, AlertCircle, Loader2, Trash2 } from "lucide-react";
+import { createProductOnBackend, deleteProductOnBackend, getProductsFromBackend } from "@/lib/api/products";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
 
 export default function AdminPortal() {
   const router = useRouter();
-  const db = useFirestore();
   const [authChecked, setAuthChecked] = useState(false);
   const [adminUser, setAdminUser] = useState<any>(null);
-  const catalogQuery = useMemo(() => query(collection(db, "products"), where("dealerId", "==", "admin-1")), [db]);
-  const { data: catalog, loading: loadingCatalog } = useCollection<any>(catalogQuery);
+  const [authToken, setAuthToken] = useState("");
+  const [catalog, setCatalog] = useState<Product[]>([]);
+  const [loadingCatalog, setLoadingCatalog] = useState(true);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +41,7 @@ export default function AdminPortal() {
       if (!token) {
         localStorage.removeItem("google_auth_user");
         localStorage.removeItem("user_role");
+        setLoadingCatalog(false);
         router.replace("/login");
         return;
       }
@@ -59,21 +59,28 @@ export default function AdminPortal() {
           localStorage.removeItem("app_auth_token");
           localStorage.removeItem("google_auth_user");
           localStorage.removeItem("user_role");
+          setLoadingCatalog(false);
           router.replace("/login");
           return;
         }
 
         if (data.user.role !== "admin") {
+          setLoadingCatalog(false);
           router.replace("/");
           return;
         }
 
+        setAuthToken(token);
         setAdminUser(data.user);
+        const products = await getProductsFromBackend({ dealerId: data.user.id });
+        setCatalog(products);
+        setLoadingCatalog(false);
         setAuthChecked(true);
       } catch (err) {
         localStorage.removeItem("app_auth_token");
         localStorage.removeItem("google_auth_user");
         localStorage.removeItem("user_role");
+        setLoadingCatalog(false);
         router.replace("/login");
       }
     };
@@ -96,20 +103,18 @@ export default function AdminPortal() {
     setSuccess(false);
 
     try {
-      const docRef = await addDoc(collection(db, "products"), {
+      const created = await createProductOnBackend(authToken, {
         name: formData.name,
         description: formData.description,
         price: parseFloat(formData.price),
         image: formData.image || "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&q=80&w=600",
         category: formData.category,
-        stock: parseInt(formData.stock),
+        stock: parseInt(formData.stock, 10),
         customizable: formData.customizable,
         rating: parseFloat(formData.rating),
-        dealerId: "admin-1", // mock admin dealer
-        createdAt: serverTimestamp(),
       });
-      
-      console.log("Product written with ID: ", docRef.id);
+
+      setCatalog((current) => [created, ...current]);
       setSuccess(true);
       
       // Reset form but keep category
@@ -126,8 +131,8 @@ export default function AdminPortal() {
       
       setTimeout(() => setSuccess(false), 5000);
     } catch (err: any) {
-      console.error("Error adding document: ", err);
-      setError(err.message || "Failed to add product to database.");
+      console.error("Error adding product:", err);
+      setError(err.message || "Failed to add product.");
     } finally {
       setLoading(false);
     }
@@ -135,11 +140,13 @@ export default function AdminPortal() {
 
   const handleDelete = async (id: string) => {
     try {
-      if(confirm("Are you sure you want to delete this product from your catalog?")) {
-        await deleteDoc(doc(db, "products", id));
+      if (confirm("Are you sure you want to delete this product from your catalog?")) {
+        await deleteProductOnBackend(authToken, id);
+        setCatalog((current) => current.filter((item) => item.id !== id));
       }
-    } catch(err) {
+    } catch (err) {
       console.error(err);
+      setError(err instanceof Error ? err.message : "Failed to delete product.");
     }
   };
 

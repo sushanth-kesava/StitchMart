@@ -17,6 +17,4 @@ const adminProfileSchema = new mongoose.Schema(
   }
 );
 
-adminProfileSchema.index({ email: 1 });
-
 module.exports = mongoose.models.AdminProfile || mongoose.model("AdminProfile", adminProfileSchema);

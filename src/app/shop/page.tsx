@@ -5,28 +5,33 @@ import { Navbar } from "@/components/navbar";
 import { ProductCard } from "@/components/product-card";
 import { Product } from "@/app/lib/mock-data";
 import { Search, RefreshCw, Sparkles, Filter } from "lucide-react";
-import { useState, useMemo } from "react";
-import { useFirestore, useCollection } from "@/firebase";
-import { collection, query, where } from "firebase/firestore";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { getProductsFromBackend } from "@/lib/api/products";
 
 export default function ShoppingPage() {
-  const db = useFirestore();
   const [searchQuery, setSearchQuery] = useState("");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Simplified query to avoid index errors: remove orderBy when using where
-  const shopQuery = useMemo(() => {
-    return query(
-      collection(db, "products"), 
-      where("customizable", "==", true)
-    );
-  }, [db]);
+  useEffect(() => {
+    const loadProducts = async () => {
+      setLoading(true);
+      try {
+        const data = await getProductsFromBackend({ customizable: true });
+        setProducts(data);
+      } catch (error) {
+        console.error("Failed to fetch customizable products", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const { data: products, loading } = useCollection<Product>(shopQuery);
+    void loadProducts();
+  }, []);
 
   const filteredProducts = useMemo(() => {
-    if (!products) return [];
     return products
       .filter(p => 
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -84,7 +89,12 @@ export default function ShoppingPage() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <button className="h-14 w-14 flex items-center justify-center rounded-2xl border border-border bg-card hover:bg-muted transition-colors">
+              <button
+                type="button"
+                title="Filter products"
+                aria-label="Filter products"
+                className="h-14 w-14 flex items-center justify-center rounded-2xl border border-border bg-card hover:bg-muted transition-colors"
+              >
                 <Filter className="h-5 w-5" />
               </button>
             </div>
