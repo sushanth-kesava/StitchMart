@@ -9,13 +9,7 @@ import { firebaseConfig } from './config';
  * Returns the app, firestore, and auth instances.
  */
 export function initializeFirebase(): { app: FirebaseApp; db: Firestore; auth: Auth } {
-  // Check if we have a valid config before initializing to prevent crash
-  if (!firebaseConfig.apiKey || firebaseConfig.apiKey === 'your-api-key-here') {
-    // If we're on the server, we might want to log this specifically
-    if (typeof window === 'undefined') {
-      console.error('CRITICAL: Firebase configuration is missing or invalid in server-side context.');
-    }
-  }
+  // Firebase is currently optional during MongoDB migration.
 
   const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
   const db = getFirestore(app);
@@ -23,7 +17,7 @@ export function initializeFirebase(): { app: FirebaseApp; db: Firestore; auth: A
   try {
     auth = getAuth(app);
   } catch (e) {
-    console.warn("Firebase Auth bypassed or invalid key");
+    auth = null;
   }
 
   return { app, db, auth: auth as Auth };

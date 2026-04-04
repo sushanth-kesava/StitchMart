@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight, Loader2, Store, User } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
+import { loginWithGoogleOnBackend } from "@/lib/api/auth";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -17,19 +18,17 @@ export default function SignupPage() {
     onSuccess: async (tokenResponse) => {
       try {
         setLoading(true);
-        const userInfo = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-        }).then((res) => res.json());
+        const result = await loginWithGoogleOnBackend({
+          googleAccessToken: tokenResponse.access_token,
+          role,
+          tokenType: tokenResponse.token_type,
+          scope: tokenResponse.scope,
+          expiresIn: tokenResponse.expires_in,
+        });
 
-        const googleUser = {
-          displayName: userInfo.name,
-          email: userInfo.email,
-          photoURL: userInfo.picture,
-        };
-        
-        // Save the session and force the selected role
-        localStorage.setItem("google_auth_user", JSON.stringify(googleUser));
-        localStorage.setItem("user_role", role);
+        localStorage.setItem("app_auth_token", result.token);
+        localStorage.setItem("google_auth_user", JSON.stringify(result.user));
+        localStorage.setItem("user_role", result.user.role);
 
         if (role === "admin") {
           router.push("/portal/admin");

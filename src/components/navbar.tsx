@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingCart, Search, User as UserIcon, Menu, Bell, Heart, Palette, Sparkles, ShoppingBag } from "lucide-react";
+import { ShoppingCart, Search, User as UserIcon, Menu, Heart, Palette, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -14,9 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
-import { useGoogleLogin, googleLogout } from '@react-oauth/google';
-import { jwtDecode } from "jwt-decode";
-import { Loader2 } from "lucide-react";
+import { googleLogout } from '@react-oauth/google';
 
 export function Navbar() {
   const [user, setUser] = useState<any>(null);
@@ -34,6 +32,7 @@ export function Navbar() {
   const handleLogout = () => {
     googleLogout();
     setUser(null);
+    localStorage.removeItem('app_auth_token');
     localStorage.removeItem('google_auth_user');
     localStorage.removeItem('user_role');
   };

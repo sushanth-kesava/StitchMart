@@ -7,16 +7,98 @@ The ultimate premium marketplace for embroidery designs, industrial threads, fab
 - **AI Customization Studio**: An interactive interface where users can select base garments (like hoodies or blouse pieces) and preview embroidery designs on them using Genkit-powered AI visualization.
 - **Product Marketplace**: A comprehensive catalog for browsing and searching digital embroidery assets and physical supplies.
 - **Personalized Recommendations**: AI-driven suggestions based on user browsing history and past purchases.
-- **Secure Authentication**: Role-based access for customers and dealers integrated with Firebase Auth.
+- **Secure Authentication**: Google OAuth login with user persistence in MongoDB via Express API.
 - **Dynamic Portals**: Real-time dashboards for managing orders and digital downloads.
 
 ## Tech Stack
 
 - **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/) with [Shadcn UI](https://ui.shadcn.com/)
-- **Backend & Auth**: [Firebase](https://firebase.google.com/) (Firestore, Authentication)
+- **Backend API**: [Express.js](https://expressjs.com/) (Node.js)
+- **Database**: [MongoDB Atlas](https://www.mongodb.com/atlas/database)
 - **AI**: [Genkit](https://firebase.google.com/docs/genkit) with Google Gemini
 - **Language**: TypeScript
+
+## Project Structure
+
+- `src/` -> Next.js frontend
+- `backend/` -> Express backend, MongoDB connection, OAuth user storage
+
+## Environment Setup
+
+Create these files from examples:
+
+1. Frontend env:
+   - Copy `.env.local.example` to `.env.local`
+   - Fill:
+     - `NEXT_PUBLIC_API_BASE_URL`
+     - `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
+
+2. Backend env:
+   - Copy `backend/.env.example` to `backend/.env`
+   - Fill:
+     - `MONGODB_URI`
+     - `JWT_SECRET`
+     - `FRONTEND_URL`
+
+## How To Create MongoDB Database (Atlas)
+
+1. Open MongoDB Atlas and create account/sign in.
+2. Create a new project (example: `StitchMart`).
+3. Create a new cluster (free tier is fine).
+4. Go to `Database Access` and create a database user:
+   - username: your choice
+   - password: strong password
+5. Go to `Network Access` and add IP:
+   - For local dev: add `0.0.0.0/0` (or your current IP for tighter security)
+6. Click `Connect` on your cluster -> `Drivers` -> `Node.js`.
+7. Copy connection string, then set DB name to `stitchmart`:
+
+```txt
+mongodb+srv://<username>:<password>@<cluster>.mongodb.net/stitchmart?retryWrites=true&w=majority&appName=<app-name>
+```
+
+8. Paste this into `backend/.env` as `MONGODB_URI`.
+
+## Run The App
+
+Install dependencies:
+
+```bash
+npm install
+npm --prefix backend install
+```
+
+Run backend (port 5000):
+
+```bash
+npm run backend:dev
+```
+
+Run frontend (port 9002):
+
+```bash
+npm run dev
+```
+
+## OAuth Flow (Current)
+
+1. Frontend gets Google access token using `@react-oauth/google`.
+2. Frontend calls backend `POST /api/auth/google`.
+3. Backend verifies token via Google userinfo endpoint.
+4. Backend upserts user and OAuth details in MongoDB `users` collection.
+5. Backend returns app JWT + user profile.
+
+## API URLs You Will Use
+
+- Backend base: `http://localhost:5000/api`
+- Health: `http://localhost:5000/api/health`
+- OAuth login/save user: `http://localhost:5000/api/auth/google`
+
+## Notes
+
+- Existing Firebase-based product/data pages are still present in frontend and can be migrated next to backend routes.
+- Auth is now stored in MongoDB through the new backend.
 
 ## Git Troubleshooting
 
