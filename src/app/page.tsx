@@ -166,7 +166,7 @@ export default function Home() {
               <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
               
               <div className="flex-1 space-y-6 text-white text-center lg:text-left relative z-10">
-                <h2 className="text-4xl lg:text-5xl font-bold font-headline">Launch Your Embroidery Business with StitchMart</h2>
+                <h2 className="text-4xl lg:text-5xl font-bold font-headline">Launch Your Embroidery Business with Antariya</h2>
                 <p className="text-white/80 text-lg">Are you a supplier? Reach thousands of embroidery machine owners across India today.</p>
                 <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground rounded-full px-10">
                   Register as Dealer
@@ -198,7 +198,7 @@ export default function Home() {
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-xl">
                   S
                 </div>
-                <span className="font-headline text-2xl font-bold text-primary">StitchMart</span>
+                <span className="font-headline text-2xl font-bold text-primary">Antariya</span>
               </Link>
               <p className="text-muted-foreground text-sm leading-relaxed">
                 Empowering India's embroidery industry since 2024. Providing premium digital assets and hardware solutions for small and medium scale embroidery businesses.
@@ -237,7 +237,7 @@ export default function Home() {
           </div>
           
           <div className="border-t pt-10 flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-muted-foreground">
-            <p>© 2024 StitchMart India. All rights reserved.</p>
+              <p>© 2024 Antariya India. All rights reserved.</p>
             <div className="flex items-center gap-8">
               <Link href="#" className="hover:text-primary">Facebook</Link>
               <Link href="#" className="hover:text-primary">Instagram</Link>

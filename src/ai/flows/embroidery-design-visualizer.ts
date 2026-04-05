@@ -9,13 +9,17 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import {googleAI} from '@genkit-ai/google-genai';
 
 const EmbroideryDesignVisualizerInputSchema = z.object({
+  garmentImage: z
+    .string()
+    .describe(
+      "A URL or base64 data URI of the base garment image where the embroidery should be rendered."
+    ),
   embroideryDesignImage: z
     .string()
     .describe(
-      "A base64 data URI of the embroidery design image. Expected format: 'data:<mimetype>;base64,<encoded_data>'"
+      "A URL or base64 data URI of the embroidery design image."
     ),
   fabricType: z
     .string()
@@ -54,30 +58,33 @@ const embroideryDesignVisualizerFlow = ai.defineFlow(
   },
   async input => {
     try {
-      // Extract MIME type from the data URI for the media part
-      const mimeMatch = input.embroideryDesignImage.match(/^data:(.*?);base64,/);
-      const contentType = mimeMatch ? mimeMatch[1] : 'image/png'; // Default to image/png if not found
+      const prompt = [
+        'Create a realistic product mockup for an embroidered garment.',
+        `Garment type: ${input.fabricType}.`,
+        `Garment color: ${input.fabricColor}.`,
+        'Render a clean studio-style apparel photo with natural folds and lighting.',
+        'Place a tasteful embroidered motif on the chest area with visible stitched thread texture.',
+        'Keep the output photorealistic, commercial, and suitable for an ecommerce product preview.',
+        'Do not include text overlays, logos, watermarks, or extra objects.',
+      ].join(' ');
 
       const {media} = await ai.generate({
-        model: googleAI.model('gemini-2.5-flash-image'), // Use the image-to-image model
-        prompt: [
-          {
-            media: {url: input.embroideryDesignImage, contentType: contentType},
-          },
-          {
-            text: `Render this embroidery design on a ${input.fabricColor} ${input.fabricType} fabric. Ensure the embroidery design is clearly visible and integrated naturally onto the fabric texture, respecting the fabric's texture and drape. The fabric should look realistic, and the embroidery should appear stitched onto it.`,
-          },
-        ],
+        model: 'openai/gpt-image-1',
+        prompt,
         config: {
-          responseModalities: ['TEXT', 'IMAGE'], // As per guidance, must provide both TEXT and IMAGE.
+          quality: 'low',
+          output_format: 'jpeg',
+          output_compression: 60,
+          size: '1024x1024',
+          n: 1,
         },
       });
 
       if (!media) {
         return {
-          visualizedImage: input.embroideryDesignImage,
+          visualizedImage: input.garmentImage,
           fallbackUsed: true,
-          message: 'AI preview is temporarily unavailable. Showing original design image instead.',
+          message: 'AI preview is temporarily unavailable. Showing original garment image instead.',
         };
       }
 
@@ -86,14 +93,20 @@ const embroideryDesignVisualizerFlow = ai.defineFlow(
         fallbackUsed: false,
       };
     } catch (error: any) {
-      const quotaExceeded = String(error?.message || '').includes('RESOURCE_EXHAUSTED');
+      const rawError = String(error?.message || '');
+      const quotaExceeded =
+        rawError.includes('RESOURCE_EXHAUSTED') ||
+        rawError.includes('insufficient_quota') ||
+        rawError.includes('429');
+
+      console.error('Embroidery preview generation failed:', rawError);
 
       return {
-        visualizedImage: input.embroideryDesignImage,
+        visualizedImage: input.garmentImage,
         fallbackUsed: true,
         message: quotaExceeded
-          ? 'Gemini quota exceeded. Add billing or try again later. Showing original design image.'
-          : 'AI preview failed. Showing original design image as fallback.',
+          ? 'OpenAI quota exceeded. Add billing or try again later. Showing original design image.'
+          : 'AI preview failed. Showing original garment image as fallback.',
       };
     }
   }

@@ -8,6 +8,7 @@ const { connectDb } = require("./config/db");
 const authRoutes = require("./routes/auth.routes");
 const productRoutes = require("./routes/product.routes");
 const orderRoutes = require("./routes/order.routes");
+const deliveryRoutes = require("./routes/delivery.routes");
 const { notFound, errorHandler } = require("./middleware/error.middleware");
 
 const app = express();
@@ -44,6 +45,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/delivery", deliveryRoutes);
 app.use(notFound);
 app.use(errorHandler);
 

@@ -11,6 +11,8 @@ const env = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN,
   frontendUrl: process.env.FRONTEND_URL || "http://localhost:9002",
   googleUserInfoUrl: process.env.GOOGLE_USERINFO_URL || "https://www.googleapis.com/oauth2/v3/userinfo",
+  delhiveryApiKey: process.env.DELHIVERY_API_KEY,
+  delhiveryBaseUrl: process.env.DELHIVERY_BASE_URL || "https://track.delhivery.com",
 };
 
 const requiredVars = ["MONGODB_URI", "JWT_SECRET"];

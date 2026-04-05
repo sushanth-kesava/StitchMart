@@ -146,7 +146,7 @@ export default function CustomerDashboardClient({ recommendations }: any) {
                   </Button>
                   <Button asChild variant="outline" size="lg" className="rounded-full h-12 px-8">
                     <Link href="/customize">
-                      <Sparkles className="mr-2 h-4 w-4"/> Try AI Design Studio
+                      <Sparkles className="mr-2 h-4 w-4"/> Build From Scratch
                     </Link>
                   </Button>
                 </div>
@@ -173,8 +173,8 @@ export default function CustomerDashboardClient({ recommendations }: any) {
                   <CardTitle>AI Customization</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground mb-4">Generate completely unique designs from text prompts using our AI Studio.</p>
-                  <Button variant="link" asChild className="p-0 text-purple-600"><Link href="/customize">Open Studio &rarr;</Link></Button>
+                  <p className="text-muted-foreground mb-4">Generate completely unique designs from text prompts using the scratch-build studio.</p>
+                  <Button variant="link" asChild className="p-0 text-purple-600"><Link href="/customize">Open Builder &rarr;</Link></Button>
                 </CardContent>
               </Card>
               <Card className="hover:shadow-md transition-shadow border-primary/20 bg-primary/5">

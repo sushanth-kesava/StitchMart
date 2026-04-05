@@ -7,6 +7,16 @@ const orderItemSchema = new mongoose.Schema(
     image: { type: String, required: true },
     price: { type: Number, required: true, min: 0 },
     quantity: { type: Number, required: true, min: 1 },
+    customization: {
+      symbol: { type: String, trim: true },
+      threadColor: { type: String, trim: true },
+      fabricColor: { type: String, trim: true },
+      size: { type: String, enum: ["Small", "Medium", "Large"] },
+      placement: { type: String, trim: true },
+      referenceImage: { type: String },
+      referenceImageName: { type: String, trim: true },
+      notes: { type: String, trim: true },
+    },
   },
   { _id: false }
 );

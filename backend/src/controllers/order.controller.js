@@ -13,6 +13,7 @@ function normalizeOrder(order) {
       image: item.image,
       price: item.price,
       quantity: item.quantity,
+      customization: item.customization || undefined,
     })),
     subtotal: order.subtotal,
     shipping: order.shipping,
@@ -21,6 +22,27 @@ function normalizeOrder(order) {
     status: order.status,
     createdAt: order.createdAt,
   };
+}
+
+function sanitizeCustomization(customization) {
+  if (!customization || typeof customization !== "object") {
+    return undefined;
+  }
+
+  const sizeOptions = new Set(["Small", "Medium", "Large"]);
+  const sanitized = {
+    symbol: typeof customization.symbol === "string" ? customization.symbol.trim() : undefined,
+    threadColor: typeof customization.threadColor === "string" ? customization.threadColor.trim() : undefined,
+    fabricColor: typeof customization.fabricColor === "string" ? customization.fabricColor.trim() : undefined,
+    size: typeof customization.size === "string" && sizeOptions.has(customization.size) ? customization.size : undefined,
+    placement: typeof customization.placement === "string" ? customization.placement.trim() : undefined,
+    referenceImage: typeof customization.referenceImage === "string" ? customization.referenceImage : undefined,
+    referenceImageName: typeof customization.referenceImageName === "string" ? customization.referenceImageName.trim() : undefined,
+    notes: typeof customization.notes === "string" ? customization.notes.trim().slice(0, 300) : undefined,
+  };
+
+  const hasValue = Object.values(sanitized).some((value) => typeof value === "string" && value.length > 0);
+  return hasValue ? sanitized : undefined;
 }
 
 async function createOrder(req, res, next) {
@@ -35,6 +57,7 @@ async function createOrder(req, res, next) {
     }
 
     const quantitiesByProductId = new Map();
+    const requestedItems = [];
 
     for (const item of items) {
       if (!item.productId || !Number.isFinite(Number(item.quantity)) || Number(item.quantity) < 1) {
@@ -47,6 +70,11 @@ async function createOrder(req, res, next) {
       const productId = String(item.productId);
       const quantity = Number(item.quantity);
       quantitiesByProductId.set(productId, (quantitiesByProductId.get(productId) || 0) + quantity);
+      requestedItems.push({
+        productId,
+        quantity,
+        customization: sanitizeCustomization(item.customization),
+      });
     }
 
     const productIds = [...quantitiesByProductId.keys()];
@@ -79,16 +107,28 @@ async function createOrder(req, res, next) {
           message: `Insufficient stock for ${product.name}`,
         });
       }
+    }
+
+    for (const item of requestedItems) {
+      const product = productMap.get(item.productId);
+
+      if (!product) {
+        return res.status(400).json({
+          success: false,
+          message: "Product lookup failed during checkout",
+        });
+      }
 
       orderItems.push({
         productId: product._id,
         name: product.name,
         image: product.image,
         price: product.price,
-        quantity,
+        quantity: item.quantity,
+        customization: item.customization,
       });
 
-      subtotal += product.price * quantity;
+      subtotal += product.price * item.quantity;
     }
 
     const shipping = subtotal > 100 ? 0 : 15;

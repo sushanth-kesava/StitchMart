@@ -30,11 +30,11 @@ export default function CartPage() {
       return;
     }
 
-    persist(items.map((item) => (item.productId === productId ? { ...item, quantity: newQuantity } : item)));
+    persist(items.map((item) => (item.lineId === productId ? { ...item, quantity: newQuantity } : item)));
   };
 
   const removeItem = (productId: string) => {
-    persist(items.filter((item) => item.productId !== productId));
+    persist(items.filter((item) => item.lineId !== productId));
   };
 
   const subtotal = useMemo(() => items.reduce((sum, item) => sum + item.price * item.quantity, 0), [items]);
@@ -54,7 +54,11 @@ export default function CartPage() {
       setPlacingOrder(true);
       await createOrderOnBackend(
         token,
-        items.map((item) => ({ productId: item.productId, quantity: item.quantity }))
+        items.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          customization: item.customization,
+        }))
       );
       clearCart();
       setItems([]);
@@ -105,7 +109,7 @@ export default function CartPage() {
 
               <div className="divide-y divide-gray-100">
                 {items.map((item) => (
-                  <div key={item.productId} className="p-6 transition-colors hover:bg-gray-50/50">
+                  <div key={item.lineId} className="p-6 transition-colors hover:bg-gray-50/50">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
                       <div className="md:col-span-6 flex items-start gap-4">
                         <div className="relative w-24 h-24 rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-100">
@@ -114,6 +118,28 @@ export default function CartPage() {
                         <div className="flex flex-col gap-1">
                           <h3 className="font-semibold text-gray-900 line-clamp-2">{item.name}</h3>
                           <p className="text-sm text-muted-foreground">{item.category}</p>
+                          {item.customization && (
+                            <div className="mt-1 space-y-1 text-xs text-muted-foreground">
+                              <p>
+                                Symbol: <span className="font-medium text-gray-700">{item.customization.symbol}</span> | Thread: <span className="font-medium text-gray-700">{item.customization.threadColor}</span>
+                              </p>
+                              <p>
+                                Cloth: <span className="font-medium text-gray-700">{item.customization.fabricColor}</span> | Size: <span className="font-medium text-gray-700">{item.customization.size}</span> | Placement: <span className="font-medium text-gray-700">{item.customization.placement}</span>
+                              </p>
+                              <p>
+                                {item.customization.referenceImageName && (
+                                  <>
+                                    Reference: <span className="font-medium text-gray-700">{item.customization.referenceImageName}</span>
+                                  </>
+                                )}
+                              </p>
+                              {item.customization.notes && (
+                                <p>
+                                  Notes: <span className="font-medium text-gray-700">{item.customization.notes}</span>
+                                </p>
+                              )}
+                            </div>
+                          )}
                           <div className="flex items-center gap-2 mt-1">
                             <span className="font-medium text-gray-900">${item.price.toFixed(2)}</span>
                           </div>
@@ -127,7 +153,7 @@ export default function CartPage() {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 rounded-full text-muted-foreground hover:text-gray-900"
-                            onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                            onClick={() => updateQuantity(item.lineId, item.quantity - 1)}
                             disabled={item.quantity <= 1}
                           >
                             <Minus className="h-4 w-4" />
@@ -137,7 +163,7 @@ export default function CartPage() {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 rounded-full text-muted-foreground hover:text-gray-900"
-                            onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                            onClick={() => updateQuantity(item.lineId, item.quantity + 1)}
                           >
                             <Plus className="h-4 w-4" />
                           </Button>
@@ -152,7 +178,7 @@ export default function CartPage() {
                             variant="ghost"
                             size="icon"
                             className="text-muted-foreground hover:text-red-500 hover:bg-red-50"
-                            onClick={() => removeItem(item.productId)}
+                            onClick={() => removeItem(item.lineId)}
                             aria-label={`Remove ${item.name} from cart`}
                           >
                             <Trash2 className="h-4 w-4" />

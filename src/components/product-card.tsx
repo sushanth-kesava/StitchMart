@@ -1,3 +1,5 @@
+"use client";
+
 import { Product } from "@/app/lib/mock-data";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -5,14 +7,90 @@ import { Button } from "@/components/ui/button";
 import { ShoppingCart, Heart, Star, Download } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { addProductToCart } from "@/lib/cart";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { addProductToCart, ProductCustomization } from "@/lib/cart";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ProductCardProps {
   product: Product;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const router = useRouter();
+  const uploadInputRef = useRef<HTMLInputElement | null>(null);
   const isDesign = product.category === 'Embroidery Designs';
+  const isCustomizable = Boolean(product.customizable);
+  const [openCustomizer, setOpenCustomizer] = useState(false);
+  const [referencePreview, setReferencePreview] = useState<string | null>(null);
+  const [referenceFileName, setReferenceFileName] = useState<string | null>(null);
+  const [customization, setCustomization] = useState<ProductCustomization>({
+    symbol: "Lotus Mandala",
+    threadColor: "Gold",
+    fabricColor: "Black",
+    size: "Medium",
+    placement: "Left Chest",
+    referenceImage: undefined,
+    referenceImageName: undefined,
+    notes: "",
+  });
+  const [quantity, setQuantity] = useState(1);
+
+  const symbols = ["Lotus Mandala", "Peacock Crest", "Floral Vine", "Royal Monogram", "Om Motif"];
+  const threadColors = ["Gold", "Silver", "Ruby Red", "Emerald", "Royal Blue", "Ivory"];
+  const fabricColors = ["Black", "Navy", "White", "Maroon", "Forest Green", "Beige"];
+  const placements = ["Left Chest", "Center Chest", "Sleeve", "Back", "Pocket"];
+
+  const handleReferenceUpload = (file: File | undefined) => {
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : null;
+      if (!result) {
+        return;
+      }
+
+      setReferencePreview(result);
+      setReferenceFileName(file.name);
+      setCustomization((prev) => ({
+        ...prev,
+        referenceImage: result,
+        referenceImageName: file.name,
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAddCustomizedItem = () => {
+    addProductToCart(
+      product,
+      quantity,
+      {
+        ...customization,
+        notes: customization.notes?.trim() || undefined,
+        referenceImage: customization.referenceImage,
+        referenceImageName: customization.referenceImageName,
+      }
+    );
+    setOpenCustomizer(false);
+    setQuantity(1);
+    setReferencePreview(null);
+    setReferenceFileName(null);
+    router.push("/cart");
+  };
 
   return (
     <Card className="group relative overflow-hidden transition-all hover:shadow-xl border-border/50 bg-card/50 backdrop-blur-sm">
@@ -58,21 +136,209 @@ export function ProductCard({ product }: ProductCardProps) {
       </CardContent>
       
       <CardFooter className="p-4 pt-0">
-        <Button
-          className="w-full gap-2 rounded-full font-semibold shadow-sm hover:shadow-md transition-all active:scale-95"
-          variant="default"
-          asChild
-        >
-          <Link
-            href="/cart"
-            onClick={() => {
-              addProductToCart(product, 1);
-            }}
+        {isCustomizable ? (
+          <>
+            <Button
+              className="w-full gap-2 rounded-full font-semibold shadow-sm hover:shadow-md transition-all active:scale-95"
+              variant="default"
+              onClick={() => setOpenCustomizer(true)}
+            >
+              <ShoppingCart className="h-4 w-4" />
+              Customize & Add
+            </Button>
+
+            <Dialog open={openCustomizer} onOpenChange={setOpenCustomizer}>
+              <DialogContent className="sm:max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Customize {product.name}</DialogTitle>
+                  <DialogDescription>
+                    Pick your symbol, colors, size, placement, and upload a reference image if you want.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-5">
+                  <div className="space-y-2">
+                    <Label>Embroidery Symbol</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {symbols.map((symbol) => (
+                        <Button
+                          key={symbol}
+                          type="button"
+                          variant={customization.symbol === symbol ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCustomization((prev) => ({ ...prev, symbol }))}
+                        >
+                          {symbol}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Thread Color</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {threadColors.map((threadColor) => (
+                          <Button
+                            key={threadColor}
+                            type="button"
+                            variant={customization.threadColor === threadColor ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCustomization((prev) => ({ ...prev, threadColor }))}
+                          >
+                            {threadColor}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Garment Color</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {fabricColors.map((fabricColor) => (
+                          <Button
+                            key={fabricColor}
+                            type="button"
+                            variant={customization.fabricColor === fabricColor ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCustomization((prev) => ({ ...prev, fabricColor }))}
+                          >
+                            {fabricColor}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Upload Reference Photo</Label>
+                    <div className="rounded-2xl border border-dashed border-border p-4 space-y-3">
+                      <input
+                        ref={uploadInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        aria-label="Upload reference photo"
+                        title="Upload reference photo"
+                        onChange={(event) => handleReferenceUpload(event.target.files?.[0])}
+                      />
+                      <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">Upload a photo of your design idea or reference piece.</p>
+                          <p className="text-xs text-muted-foreground">PNG, JPG, WEBP supported. This helps us match your request better.</p>
+                        </div>
+                        <Button type="button" variant="outline" onClick={() => uploadInputRef.current?.click()}>
+                          Upload Photo
+                        </Button>
+                      </div>
+                      {referencePreview && referenceFileName && (
+                        <div className="flex items-center gap-3 rounded-xl bg-muted/40 p-3">
+                          <div className="relative h-16 w-16 overflow-hidden rounded-lg bg-background border shrink-0">
+                            <Image src={referencePreview} alt={referenceFileName} fill className="object-cover" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{referenceFileName}</p>
+                            <p className="text-xs text-muted-foreground">Reference image attached</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>Size</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {(["Small", "Medium", "Large"] as const).map((size) => (
+                          <Button
+                            key={size}
+                            type="button"
+                            variant={customization.size === size ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCustomization((prev) => ({ ...prev, size }))}
+                          >
+                            {size}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 sm:col-span-2">
+                      <Label>Placement</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {placements.map((placement) => (
+                          <Button
+                            key={placement}
+                            type="button"
+                            variant={customization.placement === placement ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCustomization((prev) => ({ ...prev, placement }))}
+                          >
+                            {placement}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor={`customization-notes-${product.id}`}>Special Notes</Label>
+                    <Textarea
+                      id={`customization-notes-${product.id}`}
+                      placeholder="Example: keep embroidery subtle, avoid metallic shine, use a clean neckline placement..."
+                      value={customization.notes || ""}
+                      onChange={(e) => setCustomization((prev) => ({ ...prev, notes: e.target.value }))}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor={`customization-qty-${product.id}`}>Quantity</Label>
+                    <Input
+                      id={`customization-qty-${product.id}`}
+                      type="number"
+                      min={1}
+                      value={quantity}
+                      onChange={(e) => {
+                        const parsed = Number(e.target.value);
+                        setQuantity(Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 1);
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setOpenCustomizer(false);
+                      setReferencePreview(null);
+                      setReferenceFileName(null);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleAddCustomizedItem}>Add Customized Item</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </>
+        ) : (
+          <Button
+            className="w-full gap-2 rounded-full font-semibold shadow-sm hover:shadow-md transition-all active:scale-95"
+            variant="default"
+            asChild
           >
-            <ShoppingCart className="h-4 w-4" />
-            Add to Cart
-          </Link>
-        </Button>
+            <Link
+              href="/cart"
+              onClick={() => {
+                addProductToCart(product, 1);
+              }}
+            >
+              <ShoppingCart className="h-4 w-4" />
+              Add to Cart
+            </Link>
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

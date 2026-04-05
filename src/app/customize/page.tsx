@@ -43,6 +43,7 @@ export default function CustomizePage() {
     setVisualizationMessage(null);
     try {
       const result = await embroideryDesignVisualizer({
+        garmentImage: selectedGarment.image,
         embroideryDesignImage: selectedDesign.image,
         fabricType: selectedGarment.category.toLowerCase(),
         fabricColor: "original" // Simplifying for the flow

@@ -63,7 +63,7 @@ export default function ShoppingPage() {
               <div className="flex flex-wrap gap-4 pt-4">
                 <Link href="/customize">
                   <button className="h-14 px-8 rounded-2xl bg-accent text-accent-foreground font-bold text-lg shadow-xl shadow-accent/20 hover:scale-105 transition-all">
-                    Open AI Studio
+                    Open Builder
                   </button>
                 </Link>
                 <button className="h-14 px-8 rounded-2xl bg-white/10 border border-white/20 text-white font-bold text-lg hover:bg-white/20 transition-all">

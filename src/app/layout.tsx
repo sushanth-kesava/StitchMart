@@ -4,7 +4,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'StitchMart | Premium Embroidery Marketplace',
+  title: 'Antariya | Premium Embroidery Marketplace',
   description: 'The ultimate marketplace for embroidery designs, threads, fabrics, and machine accessories.',
 };
 

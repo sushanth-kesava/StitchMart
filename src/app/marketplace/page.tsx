@@ -65,7 +65,7 @@ export default function Marketplace() {
               <div className="flex flex-wrap items-center gap-4 pt-4">
                 <Button asChild size="lg" className="rounded-full h-14 px-8 bg-accent text-accent-foreground font-bold text-lg hover:scale-105 hover:bg-accent/90 transition-all shadow-xl shadow-accent/20">
                   <Link href="/customize">
-                    <Palette className="mr-2 h-5 w-5" /> Open AI Builder 
+                    <Palette className="mr-2 h-5 w-5" /> Open Builder 
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg" className="rounded-full h-14 px-8 bg-white/10 border-white/20 text-white font-bold text-lg hover:bg-white/20 transition-all">

@@ -84,7 +84,7 @@ export function Navbar() {
               S
             </div>
             <span className="font-headline text-2xl font-bold tracking-tight text-primary hidden sm:inline-block">
-              StitchMart
+              Antariya
             </span>
           </Link>
           
@@ -99,7 +99,7 @@ export function Navbar() {
             </Button>
             <Button variant="ghost" asChild className="rounded-full px-5 font-bold text-primary hover:text-primary bg-primary/5 hover:bg-primary/10">
               <Link href="/customize" className="flex items-center gap-2">
-                <Palette className="h-4 w-4" /> AI Studio
+                <Palette className="h-4 w-4" /> Studio
               </Link>
             </Button>
           </div>
@@ -154,7 +154,7 @@ export function Navbar() {
                     <Link href={user.role === "admin" ? "/portal/admin" : "/portal/customer"}>My Portal</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="rounded-xl p-3 cursor-pointer">
-                  <Link href="/customize" className="text-primary font-bold">AI Design Drafts</Link>
+                  <Link href="/customize" className="text-primary font-bold">Build From Scratch</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-destructive rounded-xl p-3 cursor-pointer font-bold">Logout</DropdownMenuItem>

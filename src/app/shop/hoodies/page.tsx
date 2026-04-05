@@ -52,7 +52,7 @@ export default function HoodieCatalog() {
                 Your Style, <br />Our <span className="text-accent italic">Stitches</span>
               </h1>
               <p className="text-xl text-white/80">
-                Premium quality hoodies designed for longevity and style. Choose a base and head to our AI studio to customize your perfect piece.
+                Premium quality hoodies designed for longevity and style. Choose a base and use the builder to customize your perfect piece.
               </p>
               <div className="flex gap-4 pt-4">
                 <Link href="/customize">

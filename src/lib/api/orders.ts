@@ -1,8 +1,20 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
 
+export type ProductCustomization = {
+  symbol: string;
+  threadColor: string;
+  fabricColor: string;
+  size: "Small" | "Medium" | "Large";
+  placement: string;
+  referenceImage?: string;
+  referenceImageName?: string;
+  notes?: string;
+};
+
 export type OrderItemInput = {
   productId: string;
   quantity: number;
+  customization?: ProductCustomization;
 };
 
 export type OrderItem = {
@@ -11,6 +23,7 @@ export type OrderItem = {
   image: string;
   price: number;
   quantity: number;
+  customization?: ProductCustomization;
 };
 
 export type Order = {

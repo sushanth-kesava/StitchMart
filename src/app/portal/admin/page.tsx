@@ -294,7 +294,7 @@ export default function AdminPortal() {
                 <div className="pt-6 border-t border-gray-100 flex items-center justify-between">
                   <div>
                     <label className="block text-base font-bold text-gray-900">Customizable Base</label>
-                    <p className="text-sm text-gray-500">Enable this if the item can be sent to the AI Design Studio.</p>
+                    <p className="text-sm text-gray-500">Enable this if the item can be sent to the scratch-build studio.</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input 
