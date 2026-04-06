@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { MOCK_PRODUCTS } from "@/app/lib/mock-data";
 import { getMyOrdersFromBackend } from "@/lib/api/orders";
 import { getWishlistFromBackend, WishlistItem } from "@/lib/api/wishlist";
+import { BRAND_ASSET_URL } from "@/lib/brand";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
 
@@ -88,8 +89,8 @@ export default function CustomerDashboardClient({ recommendations }: any) {
       <aside className="w-full lg:w-64 space-y-4">
         <div className="bg-card border shadow-sm rounded-2xl p-6 space-y-6">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-2xl">
-              {user.name.charAt(0)}
+            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+              <img src={BRAND_ASSET_URL} alt="Antariya logo" className="h-12 w-12 rounded-full object-cover" />
             </div>
             <div>
               <p className="font-bold text-lg leading-tight">{user.name}</p>

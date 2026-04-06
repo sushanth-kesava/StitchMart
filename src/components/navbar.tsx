@@ -18,6 +18,7 @@ import { googleLogout } from '@react-oauth/google';
 import { CART_UPDATED_EVENT, getCartItemCount } from "@/lib/cart";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
+export const BRAND_LOGO_URL = "https://res.cloudinary.com/doefhzx01/image/upload/v1775491592/Antariya-icon_1_mzdn29.png";
 
 function clearLocalSession() {
   localStorage.removeItem('app_auth_token');
@@ -108,13 +109,12 @@ export function Navbar() {
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 h-20 flex items-center justify-between gap-4">
         <div className="flex items-center gap-8">
-          <Link href={logoHref} className="flex items-center gap-2 group">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-2xl group-hover:rotate-12 transition-all shadow-lg shadow-primary/20">
-              S
-            </div>
-            <span className="font-headline text-2xl font-bold tracking-tight text-primary hidden sm:inline-block">
-              Antariya
-            </span>
+          <Link href={logoHref} className="flex items-center group">
+            <img
+              src={BRAND_LOGO_URL}
+              alt="Antariya logo"
+              className="h-16 w-auto max-w-[260px] rounded-1xl object-cover group-hover:scale-[1.02] transition-transform"
+            />
           </Link>
           
           <div className="hidden md:flex items-center gap-1">

@@ -5,10 +5,11 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Loader2, ShieldCheck } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { loginWithGoogleOnBackend } from "@/lib/api/auth";
 import { useToast } from "@/hooks/use-toast";
+import { BRAND_ASSET_URL } from "@/lib/brand";
 
 export default function SuperAdminLoginPage() {
   const router = useRouter();
@@ -68,7 +69,7 @@ export default function SuperAdminLoginPage() {
           <div className="p-8 space-y-8 bg-card">
             <div className="text-center space-y-4">
               <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto text-primary">
-                <ShieldCheck className="h-8 w-8" />
+                <img src={BRAND_ASSET_URL} alt="Antariya icon" className="h-10 w-10 rounded-xl object-cover" />
               </div>
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold font-headline">Super Admin Access</h1>

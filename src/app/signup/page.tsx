@@ -4,11 +4,12 @@ import { useState } from "react";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Sparkles, ArrowRight, Loader2, User, Shield, BadgeCheck } from "lucide-react";
+import { ArrowRight, Loader2, User, Shield, BadgeCheck } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
 import { loginWithGoogleOnBackend } from "@/lib/api/auth";
 import { useToast } from "@/hooks/use-toast";
+import { BRAND_ASSET_URL } from "@/lib/brand";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -78,7 +79,7 @@ export default function SignupPage() {
           <div className="p-8 space-y-8 bg-card">
             <div className="text-center w-full space-y-4">
               <div className="w-16 h-16 bg-secondary/10 rounded-2xl flex items-center justify-center mx-auto text-secondary">
-                <Sparkles className="h-8 w-8" />
+                <img src={BRAND_ASSET_URL} alt="Antariya icon" className="h-10 w-10 rounded-xl object-cover" />
               </div>
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold font-headline">Create your Account</h1>

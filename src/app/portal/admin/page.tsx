@@ -42,6 +42,7 @@ import {
   updateAdminOrderStatusOnBackend,
 } from "@/lib/api/orders";
 import { createAccessRequestOnBackend, SuperadminRequestType } from "@/lib/api/superadmin";
+import { BRAND_ASSET_URL } from "@/lib/brand";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
 
@@ -420,8 +421,8 @@ export default function AdminPortal() {
         <aside className="w-full lg:w-72 space-y-4">
           <div className="bg-primary border shadow-lg rounded-2xl p-6 space-y-6 text-primary-foreground">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center font-bold text-2xl">
-                A
+              <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
+                <img src={BRAND_ASSET_URL} alt="Antariya logo" className="h-12 w-12 rounded-full object-cover" />
               </div>
               <div>
                 <p className="font-bold text-lg leading-tight">Admin Portal</p>

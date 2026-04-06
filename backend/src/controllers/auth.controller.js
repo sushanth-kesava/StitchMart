@@ -46,11 +46,13 @@ async function loginWithGoogle(req, res, next) {
     const emailAllowedAsAdmin = env.adminAllowedEmails.includes(normalizedEmail);
     const emailAllowedAsSuperAdmin = env.superAdminAllowedEmails.includes(normalizedEmail);
     const inferredRole = existingAdmin
-      ? existingAdmin.role || "admin"
-      : existingUser
-        ? existingUser.role || "customer"
-        : emailAllowedAsSuperAdmin
-          ? "superadmin"
+      ? emailAllowedAsSuperAdmin
+        ? "superadmin"
+        : existingAdmin.role || "admin"
+      : emailAllowedAsSuperAdmin
+        ? "superadmin"
+        : existingUser
+          ? existingUser.role || "customer"
           : emailAllowedAsAdmin
             ? "admin"
             : "customer";
@@ -78,7 +80,7 @@ async function loginWithGoogle(req, res, next) {
     let authDocument;
 
     if (requestedPrivilegedRole === "admin" || requestedPrivilegedRole === "superadmin") {
-      const shouldBeSuperAdmin = requestedPrivilegedRole === "superadmin";
+      const shouldBeSuperAdmin = requestedPrivilegedRole === "superadmin" || emailAllowedAsSuperAdmin;
       const isAllowedPrivilegedEmail = shouldBeSuperAdmin ? emailAllowedAsSuperAdmin : emailAllowedAsAdmin;
 
       if (!isAllowedPrivilegedEmail) {
@@ -135,7 +137,7 @@ async function loginWithGoogle(req, res, next) {
         adminDocument.displayName = userPayload.displayName;
         adminDocument.photoURL = userPayload.photoURL;
         adminDocument.provider = "google";
-        adminDocument.role = existingAdmin?.role || inferredRole;
+        adminDocument.role = emailAllowedAsSuperAdmin ? "superadmin" : existingAdmin?.role || inferredRole;
         adminDocument.active = true;
         adminDocument.lastAdminLoginAt = new Date();
         adminDocument.loginCount = Number(adminDocument.loginCount || 0) + 1;

@@ -29,19 +29,33 @@ type AuthResponse = {
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
 
 export async function loginWithGoogleOnBackend(payload: GoogleAuthPayload): Promise<AuthResponse> {
-  const response = await fetch(`${API_BASE_URL}/auth/google`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
+  let response: Response;
 
-  const data = await response.json();
-
-  if (!response.ok || !data.success) {
-    throw new Error(data.message || "Authentication failed");
+  try {
+    response = await fetch(`${API_BASE_URL}/auth/google`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (error) {
+    const networkError = error instanceof Error ? error.message : "Network request failed";
+    throw new Error(
+      `Unable to reach authentication server (${API_BASE_URL}). Please verify backend is running and reachable. ${networkError}`
+    );
   }
 
-  return data as AuthResponse;
+  let data: AuthResponse | null = null;
+  try {
+    data = (await response.json()) as AuthResponse;
+  } catch {
+    data = null;
+  }
+
+  if (!response.ok || !data?.success) {
+    throw new Error(data?.message || `Authentication failed with status ${response.status}.`);
+  }
+
+  return data;
 }
