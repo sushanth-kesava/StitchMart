@@ -25,13 +25,16 @@ import {
 } from "lucide-react";
 import {
   getSuperAdminDashboardFromBackend,
+  ManagedRole,
   reviewAccessRequestOnBackend,
   SuperAdminAccessRequest,
   SuperAdminCustomerProfile,
   SuperAdminDashboardPayload,
   SuperAdminProfile,
   SuperadminRequestStatus,
+  updateUserRoleOnBackend,
 } from "@/lib/api/superadmin";
+import { formatINR } from "@/lib/india";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
 
@@ -46,6 +49,10 @@ export default function SuperAdminPortalPage() {
   const [search, setSearch] = useState("");
   const [requestStatus, setRequestStatus] = useState<SuperadminRequestStatus | "all">("pending");
   const [reviewingRequestId, setReviewingRequestId] = useState<string | null>(null);
+  const [roleTargetEmail, setRoleTargetEmail] = useState("");
+  const [roleTarget, setRoleTarget] = useState<ManagedRole>("admin");
+  const [updatingRole, setUpdatingRole] = useState(false);
+  const [roleSuccess, setRoleSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     const loadSession = async () => {
@@ -136,6 +143,80 @@ export default function SuperAdminPortalPage() {
     }
   };
 
+  const handleRoleUpdate = async () => {
+    if (!authToken || updatingRole) {
+      return;
+    }
+
+    const normalizedEmail = roleTargetEmail.trim().toLowerCase();
+    if (!normalizedEmail) {
+      setError("Email is required to update role.");
+      return;
+    }
+
+    try {
+      setUpdatingRole(true);
+      setRoleSuccess(null);
+      setError(null);
+
+      const account = await updateUserRoleOnBackend(authToken, {
+        email: normalizedEmail,
+        role: roleTarget,
+      });
+
+      setDashboard((current) => {
+        if (!current) {
+          return current;
+        }
+
+        const customerProfiles = current.customerProfiles.filter(
+          (profile) => profile.email.toLowerCase() !== account.email.toLowerCase()
+        );
+
+        const adminProfiles = current.adminProfiles.filter(
+          (profile) => profile.email.toLowerCase() !== account.email.toLowerCase()
+        );
+
+        if (account.role === "customer") {
+          customerProfiles.unshift({
+            id: `manual-${account.email}`,
+            email: account.email,
+            displayName: account.email.split("@")[0],
+            photoURL: null,
+            role: "customer",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          });
+        } else {
+          adminProfiles.unshift({
+            id: `manual-${account.email}`,
+            email: account.email,
+            displayName: account.email.split("@")[0],
+            photoURL: null,
+            role: account.role,
+            active: account.active,
+            loginCount: 0,
+            lastAdminLoginAt: null,
+            createdAt: new Date().toISOString(),
+          });
+        }
+
+        return {
+          ...current,
+          adminProfiles,
+          customerProfiles,
+        };
+      });
+
+      setRoleSuccess(`${account.email} updated to ${account.role}.`);
+      setRoleTargetEmail("");
+    } catch (roleError) {
+      setError(roleError instanceof Error ? roleError.message : "Failed to update role.");
+    } finally {
+      setUpdatingRole(false);
+    }
+  };
+
   const adminProfiles = dashboard?.adminProfiles || [];
   const customerProfiles = dashboard?.customerProfiles || [];
 
@@ -150,7 +231,7 @@ export default function SuperAdminPortalPage() {
   const summaryCards = [
     {
       label: "Revenue",
-      value: `$${Number(dashboard?.summary.totalRevenue || 0).toFixed(2)}`,
+      value: formatINR(Number(dashboard?.summary.totalRevenue || 0)),
       icon: Wallet,
       tone: "emerald",
       detail: `${dashboard?.summary.totalOrders || 0} orders`,
@@ -321,9 +402,44 @@ export default function SuperAdminPortalPage() {
               <Card className="rounded-[28px] border-gray-100 shadow-sm bg-white">
                 <CardHeader>
                   <CardTitle className="text-xl flex items-center gap-2"><UserCog className="h-5 w-5 text-slate-700" /> Platform Profiles</CardTitle>
-                  <CardDescription>Review all admin and customer profiles from the same console.</CardDescription>
+                  <CardDescription>Review all admin and customer profiles and manage account roles directly.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
+                  <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 space-y-3">
+                    <p className="text-sm font-semibold text-gray-800">Role Manager</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <Input
+                        placeholder="email@example.com"
+                        value={roleTargetEmail}
+                        onChange={(event) => setRoleTargetEmail(event.target.value)}
+                        className="h-11 rounded-xl border-gray-200 bg-white"
+                      />
+                      <select
+                        title="Role target"
+                        aria-label="Role target"
+                        value={roleTarget}
+                        onChange={(event) => setRoleTarget(event.target.value as ManagedRole)}
+                        className="h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-primary"
+                      >
+                        <option value="customer">customer</option>
+                        <option value="admin">admin</option>
+                        <option value="superadmin">superadmin</option>
+                      </select>
+                      <Button
+                        type="button"
+                        className="h-11 rounded-xl"
+                        onClick={handleRoleUpdate}
+                        disabled={updatingRole}
+                      >
+                        {updatingRole ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        Update Role
+                      </Button>
+                    </div>
+                    {roleSuccess ? (
+                      <p className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">{roleSuccess}</p>
+                    ) : null}
+                  </div>
+
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <p className="text-sm font-semibold text-gray-800">Admin Profiles</p>

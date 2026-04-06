@@ -12,6 +12,7 @@ import { MOCK_PRODUCTS } from "@/app/lib/mock-data";
 import { getMyOrdersFromBackend } from "@/lib/api/orders";
 import { getWishlistFromBackend, WishlistItem } from "@/lib/api/wishlist";
 import { BRAND_ASSET_URL } from "@/lib/brand";
+import { formatINR, formatIndianDate, normalizeCatalogPriceToINR } from "@/lib/india";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
 
@@ -257,12 +258,12 @@ export default function CustomerDashboardClient({ recommendations }: any) {
                       {orders.map((order, i) => (
                         <tr key={i} className="hover:bg-gray-50/50 transition-colors">
                           <td className="px-6 py-5 font-mono font-medium text-gray-900">{order.id}</td>
-                          <td className="px-6 py-5 text-muted-foreground">{new Date(order.createdAt).toLocaleDateString()}</td>
+                          <td className="px-6 py-5 text-muted-foreground">{formatIndianDate(order.createdAt)}</td>
                           <td className="px-6 py-5">
                             <Badge className="bg-green-500/10 text-green-700 border-none shadow-none">{order.status}</Badge>
                           </td>
                           <td className="px-6 py-5 font-medium">{order.items?.length || 0}</td>
-                          <td className="px-6 py-5 font-bold text-gray-900">${Number(order.total).toFixed(2)}</td>
+                          <td className="px-6 py-5 font-bold text-gray-900">{formatINR(Number(order.total || 0))}</td>
                           <td className="px-6 py-5 text-right">
                             <Button variant="secondary" size="sm" className="rounded-full shadow-sm">Details</Button>
                           </td>
@@ -313,7 +314,7 @@ export default function CustomerDashboardClient({ recommendations }: any) {
                     <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{rec.reason}</p>
                   </CardContent>
                   <div className="p-5 pt-0 mt-auto flex items-center justify-between">
-                    <span className="font-bold text-lg">${product.price.toFixed(2)}</span>
+                    <span className="font-bold text-lg">{formatINR(normalizeCatalogPriceToINR(Number(product.price || 0)))}</span>
                     <Button size="sm" className="rounded-full opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 shadow-md">
                       View Item <ArrowRight className="ml-1 h-3 w-3" />
                     </Button>
@@ -349,7 +350,7 @@ export default function CustomerDashboardClient({ recommendations }: any) {
                       <CardContent className="p-4 space-y-2">
                         <div className="flex items-center justify-between gap-2">
                           <Badge variant="secondary" className="rounded-full">{item.product.category}</Badge>
-                          <span className="text-xs font-semibold text-muted-foreground">₹{(item.product.price * 80).toLocaleString()}</span>
+                          <span className="text-xs font-semibold text-muted-foreground">{formatINR(normalizeCatalogPriceToINR(Number(item.product.price || 0)))}</span>
                         </div>
                         <h3 className="font-semibold text-lg line-clamp-1">{item.product.name}</h3>
                         <p className="text-sm text-muted-foreground line-clamp-2">{item.product.description}</p>

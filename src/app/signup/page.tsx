@@ -83,7 +83,7 @@ export default function SignupPage() {
               </div>
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold font-headline">Create your Account</h1>
-                <p className="text-muted-foreground text-sm font-medium">Join the largest embroidery marketplace in India</p>
+                <p className="text-muted-foreground text-sm font-medium">Join India&apos;s embroidery-first marketplace</p>
               </div>
             </div>
 
@@ -132,9 +132,9 @@ export default function SignupPage() {
           <div className="p-6 bg-muted/40 border-t border-border/50 text-center space-y-3">
               <p className="text-xs text-center text-muted-foreground px-6 font-medium leading-relaxed">
               By registering, you agree to our{" "}
-              <Link href="/terms" className="underline underline-offset-4 hover:text-primary">Terms of Service</Link>{" "}
+                <Link href="/terms" className="underline underline-offset-4 hover:text-primary">India Terms of Service</Link>{" "}
               and{" "}
-              <Link href="/privacy" className="underline underline-offset-4 hover:text-primary">Privacy Policy</Link>.
+                <Link href="/privacy" className="underline underline-offset-4 hover:text-primary">India Privacy Policy</Link>.
             </p>
             <p className="text-xs text-center text-muted-foreground px-6 leading-relaxed flex items-center justify-center gap-2">
               <Shield className="h-3.5 w-3.5" /> Admin requests are reviewed by the superadmin before access is granted.

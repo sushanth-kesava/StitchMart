@@ -73,14 +73,14 @@ export default function AdminLoginPage() {
               </div>
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold font-headline">Admin Portal Access</h1>
-                <p className="text-muted-foreground text-sm font-medium">Restricted sign-in for approved administrator accounts.</p>
+                <p className="text-muted-foreground text-sm font-medium">Restricted sign-in for approved India operations administrators.</p>
               </div>
             </div>
 
             <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-center space-y-2">
               <Sparkles className="h-6 w-6 mx-auto text-primary" />
               <p className="text-sm font-bold text-gray-700">Approval required</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">If your Google account is not provisioned as an admin, access will be denied.</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">If your Google account is not provisioned for India admin access, sign-in will be denied.</p>
             </div>
 
             <Button

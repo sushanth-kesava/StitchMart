@@ -10,6 +10,13 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Separator } from "@/components/ui/separator";
 import { CartItem, clearCart, getCartItems, setCartItems } from "@/lib/cart";
 import { createOrderOnBackend } from "@/lib/api/orders";
+import {
+  formatINR,
+  INDIA_FREE_SHIPPING_THRESHOLD,
+  INDIA_GST_RATE,
+  INDIA_STANDARD_SHIPPING,
+  normalizeCatalogPriceToINR,
+} from "@/lib/india";
 
 export default function CartPage() {
   const router = useRouter();
@@ -37,9 +44,12 @@ export default function CartPage() {
     persist(items.filter((item) => item.lineId !== productId));
   };
 
-  const subtotal = useMemo(() => items.reduce((sum, item) => sum + item.price * item.quantity, 0), [items]);
-  const shipping = subtotal > 100 ? 0 : 15;
-  const tax = subtotal * 0.08;
+  const subtotal = useMemo(
+    () => items.reduce((sum, item) => sum + normalizeCatalogPriceToINR(item.price) * item.quantity, 0),
+    [items]
+  );
+  const shipping = subtotal >= INDIA_FREE_SHIPPING_THRESHOLD ? 0 : INDIA_STANDARD_SHIPPING;
+  const tax = subtotal * INDIA_GST_RATE;
   const total = subtotal + shipping + tax;
 
   const handleCheckout = async () => {
@@ -141,7 +151,7 @@ export default function CartPage() {
                             </div>
                           )}
                           <div className="flex items-center gap-2 mt-1">
-                            <span className="font-medium text-gray-900">${item.price.toFixed(2)}</span>
+                            <span className="font-medium text-gray-900">{formatINR(normalizeCatalogPriceToINR(item.price))}</span>
                           </div>
                         </div>
                       </div>
@@ -173,7 +183,7 @@ export default function CartPage() {
                       <div className="md:col-span-3 flex justify-between md:justify-end items-center">
                         <span className="md:hidden text-sm font-medium text-muted-foreground">Total:</span>
                         <div className="flex items-center gap-4">
-                          <span className="font-semibold text-lg text-gray-900">${(item.price * item.quantity).toFixed(2)}</span>
+                          <span className="font-semibold text-lg text-gray-900">{formatINR(normalizeCatalogPriceToINR(item.price) * item.quantity)}</span>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -200,25 +210,25 @@ export default function CartPage() {
               <CardContent className="pt-6 space-y-4">
                 <div className="flex justify-between items-center text-gray-600">
                   <span>Subtotal</span>
-                  <span className="font-medium text-gray-900">${subtotal.toFixed(2)}</span>
+                  <span className="font-medium text-gray-900">{formatINR(subtotal)}</span>
                 </div>
                 <div className="flex justify-between items-center text-gray-600">
                   <span>Shipping</span>
-                  <span className="font-medium text-gray-900">{shipping === 0 ? <span className="text-green-600">Free</span> : `$${shipping.toFixed(2)}`}</span>
+                  <span className="font-medium text-gray-900">{shipping === 0 ? <span className="text-green-600">Free</span> : formatINR(shipping)}</span>
                 </div>
                 {shipping > 0 && (
-                  <p className="text-xs text-muted-foreground text-right mt-1">Free shipping on orders over $100</p>
+                  <p className="text-xs text-muted-foreground text-right mt-1">Free shipping on orders above {formatINR(INDIA_FREE_SHIPPING_THRESHOLD)}</p>
                 )}
                 <div className="flex justify-between items-center text-gray-600">
-                  <span>Estimated Tax</span>
-                  <span className="font-medium text-gray-900">${tax.toFixed(2)}</span>
+                  <span>GST (18%)</span>
+                  <span className="font-medium text-gray-900">{formatINR(tax)}</span>
                 </div>
 
                 <Separator className="my-4" />
 
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-bold text-gray-900">Total</span>
-                  <span className="text-2xl font-bold text-gray-900">${total.toFixed(2)}</span>
+                  <span className="text-2xl font-bold text-gray-900">{formatINR(total)}</span>
                 </div>
               </CardContent>
               <CardFooter className="flex-col gap-4 pb-8">
@@ -237,7 +247,7 @@ export default function CartPage() {
 
                 <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mt-4">
                   <ShieldCheck className="h-4 w-4 text-green-500" />
-                  <span>Secure checkout process</span>
+                  <span>Secure India checkout (UPI / NetBanking / Cards / COD)</span>
                 </div>
               </CardFooter>
             </Card>

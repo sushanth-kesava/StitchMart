@@ -73,13 +73,13 @@ export default function SuperAdminLoginPage() {
               </div>
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold font-headline">Super Admin Access</h1>
-                <p className="text-muted-foreground text-sm font-medium">Full platform control across admin and customer systems</p>
+                <p className="text-muted-foreground text-sm font-medium">Full India platform governance across admin and customer systems</p>
               </div>
             </div>
 
             <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-center space-y-2">
               <p className="text-sm font-bold text-gray-700">Escalated approval required</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">This login is only available for pre-approved super-admin accounts.</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">This login is only available for pre-approved India super-admin accounts.</p>
             </div>
 
             <Button

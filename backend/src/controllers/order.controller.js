@@ -4,6 +4,16 @@ const User = require("../models/User");
 const Review = require("../models/Review");
 const WishlistItem = require("../models/WishlistItem");
 
+const INDIA_FREE_SHIPPING_THRESHOLD = 1499;
+const INDIA_STANDARD_SHIPPING = 99;
+const INDIA_GST_RATE = 0.18;
+const LEGACY_USD_TO_INR_RATE = 83;
+
+function normalizeCatalogPriceToINR(price) {
+  const value = Number(price || 0);
+  return value > 0 && value <= 200 ? value * LEGACY_USD_TO_INR_RATE : value;
+}
+
 function normalizeOrder(order) {
   return {
     id: order._id.toString(),
@@ -122,20 +132,22 @@ async function createOrder(req, res, next) {
         });
       }
 
+      const unitPriceINR = normalizeCatalogPriceToINR(product.price);
+
       orderItems.push({
         productId: product._id,
         name: product.name,
         image: product.image,
-        price: product.price,
+        price: unitPriceINR,
         quantity: item.quantity,
         customization: item.customization,
       });
 
-      subtotal += product.price * item.quantity;
+      subtotal += unitPriceINR * item.quantity;
     }
 
-    const shipping = subtotal > 100 ? 0 : 15;
-    const tax = subtotal * 0.08;
+    const shipping = subtotal >= INDIA_FREE_SHIPPING_THRESHOLD ? 0 : INDIA_STANDARD_SHIPPING;
+    const tax = subtotal * INDIA_GST_RATE;
     const total = subtotal + shipping + tax;
 
     await Promise.all(

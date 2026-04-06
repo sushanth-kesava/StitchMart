@@ -4,6 +4,7 @@ const {
   createAccessRequest,
   listAccessRequests,
   reviewAccessRequest,
+  updateUserRole,
 } = require("../controllers/superadmin.controller");
 const { requireAuth } = require("../middleware/auth.middleware");
 
@@ -13,5 +14,6 @@ router.get("/dashboard", requireAuth, getSuperAdminDashboard);
 router.get("/access-requests", requireAuth, listAccessRequests);
 router.post("/access-requests", requireAuth, createAccessRequest);
 router.patch("/access-requests/:requestId", requireAuth, reviewAccessRequest);
+router.patch("/users/role", requireAuth, updateUserRole);
 
 module.exports = router;

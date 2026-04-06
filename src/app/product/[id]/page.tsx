@@ -50,6 +50,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { getWishlistFromBackend, setWishlistItemOnBackend } from "@/lib/api/wishlist";
+import { formatINR, normalizeCatalogPriceToINR } from "@/lib/india";
 
 const LAST_SUCCESSFUL_PINCODE_KEY = "antariya_last_successful_pincode";
 const APPAREL_CATEGORIES = new Set(["Hoodies", "Blouses"]);
@@ -800,7 +801,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
               <h1 className="text-5xl lg:text-6xl font-bold font-headline leading-tight">{product.name}</h1>
               
               <div className="flex items-center gap-6">
-                <span className="text-4xl font-bold text-primary">₹{(product.price * 80).toLocaleString()}</span>
+                <span className="text-4xl font-bold text-primary">{formatINR(normalizeCatalogPriceToINR(Number(product.price || 0)))}</span>
                 <Badge className="bg-green-500/10 text-green-600 border-none px-4 py-1 text-sm font-bold">In Stock: {product.stock}</Badge>
               </div>
               <div className="flex flex-wrap items-center gap-2">

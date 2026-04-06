@@ -65,6 +65,15 @@ function normalizeAccessRequest(request) {
   };
 }
 
+function normalizeManagedAccount({ email, role, source, active }) {
+  return {
+    email,
+    role,
+    source,
+    active,
+  };
+}
+
 async function getSuperAdminDashboard(req, res, next) {
   try {
     if (!ensureSuperAdmin(req, res)) {
@@ -268,9 +277,108 @@ async function reviewAccessRequest(req, res, next) {
   }
 }
 
+async function updateUserRole(req, res, next) {
+  try {
+    if (!ensureSuperAdmin(req, res)) {
+      return;
+    }
+
+    const { email, role } = req.body;
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    const nextRole = String(role || "").trim().toLowerCase();
+    const validRoles = new Set(["customer", "admin", "superadmin"]);
+
+    if (!normalizedEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
+    }
+
+    if (!validRoles.has(nextRole)) {
+      return res.status(400).json({
+        success: false,
+        message: "Role must be customer, admin, or superadmin",
+      });
+    }
+
+    const existingAdmin = await AdminProfile.findOne({ email: normalizedEmail });
+    const existingUser = await User.findOne({ email: normalizedEmail });
+
+    if (!existingAdmin && !existingUser) {
+      return res.status(404).json({
+        success: false,
+        message: "No account found for this email",
+      });
+    }
+
+    if (nextRole === "customer") {
+      if (existingAdmin) {
+        existingAdmin.active = false;
+        await existingAdmin.save();
+      }
+
+      const userDocument = existingUser || new User({
+        email: normalizedEmail,
+        displayName: existingAdmin?.displayName || normalizedEmail.split("@")[0],
+      });
+
+      userDocument.googleId = userDocument.googleId || existingAdmin?.googleId || null;
+      userDocument.displayName = userDocument.displayName || existingAdmin?.displayName || normalizedEmail.split("@")[0];
+      userDocument.photoURL = userDocument.photoURL || existingAdmin?.photoURL || null;
+      userDocument.role = "customer";
+      userDocument.authProvider = userDocument.authProvider || "google";
+      await userDocument.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Role updated to customer",
+        account: normalizeManagedAccount({
+          email: normalizedEmail,
+          role: "customer",
+          source: "user",
+          active: true,
+        }),
+      });
+    }
+
+    const adminDocument = existingAdmin || new AdminProfile({
+      email: normalizedEmail,
+      displayName: existingUser?.displayName || normalizedEmail.split("@")[0],
+    });
+
+    adminDocument.googleId = adminDocument.googleId || existingUser?.googleId || null;
+    adminDocument.displayName = adminDocument.displayName || existingUser?.displayName || normalizedEmail.split("@")[0];
+    adminDocument.photoURL = adminDocument.photoURL || existingUser?.photoURL || null;
+    adminDocument.provider = adminDocument.provider || "google";
+    adminDocument.role = nextRole === "superadmin" ? "superadmin" : "admin";
+    adminDocument.active = true;
+    await adminDocument.save();
+
+    if (existingUser && existingUser.role !== "customer") {
+      existingUser.role = "customer";
+      await existingUser.save();
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Role updated to ${adminDocument.role}`,
+      account: normalizeManagedAccount({
+        email: normalizedEmail,
+        role: adminDocument.role,
+        source: "admin_profile",
+        active: true,
+      }),
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 module.exports = {
   getSuperAdminDashboard,
   createAccessRequest,
   listAccessRequests,
   reviewAccessRequest,
+  updateUserRole,
 };

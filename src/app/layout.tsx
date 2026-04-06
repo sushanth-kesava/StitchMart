@@ -39,7 +39,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en-IN">
       <head>
         <link rel="icon" href={BRAND_ICON_URL} />
         <link rel="shortcut icon" href={BRAND_ICON_URL} />

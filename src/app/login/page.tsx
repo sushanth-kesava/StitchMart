@@ -96,7 +96,7 @@ export default function LoginPage() {
               <div className="space-y-3">
                 <h1 className="text-3xl md:text-4xl font-bold font-headline tracking-tight">Welcome Back</h1>
                 <p className="text-muted-foreground text-sm md:text-base max-w-md mx-auto leading-relaxed">
-                  Continue with Google to access your Antariya account. We automatically detect your role and redirect you to the correct dashboard.
+                  Continue with Google to access your Antariya India account. We automatically detect your role and route you to the right dashboard.
                 </p>
               </div>
             </div>
@@ -145,7 +145,7 @@ export default function LoginPage() {
               Access checks happen on every sign-in. Unapproved admin requests will remain blocked until superadmin review.
             </p>
             <p className="text-xs text-muted-foreground">
-              By continuing, you agree to secure account verification and session validation.
+              By continuing, you agree to secure account verification and India-region session validation.
             </p>
           </div>
         </div>

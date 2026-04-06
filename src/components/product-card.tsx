@@ -22,6 +22,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { formatINR, normalizeCatalogPriceToINR } from "@/lib/india";
 
 interface ProductCardProps {
   product: Product;
@@ -196,7 +197,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </Link>
         
         <div className="flex items-baseline gap-2">
-          <span className="text-xl font-bold text-primary">₹{(product.price * 80).toLocaleString()}</span>
+          <span className="text-xl font-bold text-primary">{formatINR(normalizeCatalogPriceToINR(Number(product.price || 0)))}</span>
           {isDesign && <span className="text-xs text-muted-foreground">Unlimited License</span>}
         </div>
       </CardContent>

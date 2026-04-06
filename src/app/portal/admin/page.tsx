@@ -19,7 +19,6 @@ import {
   Flag,
   History,
   Trash2,
-  DollarSign,
   Users,
   ShoppingCart,
   ClipboardCheck,
@@ -43,6 +42,7 @@ import {
 } from "@/lib/api/orders";
 import { createAccessRequestOnBackend, SuperadminRequestType } from "@/lib/api/superadmin";
 import { BRAND_ASSET_URL } from "@/lib/brand";
+import { formatINR, formatIndianDate, formatIndianDateTime, normalizeCatalogPriceToINR } from "@/lib/india";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
 
@@ -569,10 +569,9 @@ export default function AdminPortal() {
                   <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4">
                     <p className="text-xs uppercase tracking-wide text-emerald-700 font-semibold">Revenue</p>
                     <p className="text-2xl font-black text-emerald-900 mt-1 flex items-center gap-2">
-                      <DollarSign className="h-5 w-5" />
-                      {Number(dashboardData?.summary.totalRevenue || 0).toFixed(2)}
+                      {formatINR(Number(dashboardData?.summary.totalRevenue || 0))}
                     </p>
-                    <p className="text-sm text-emerald-700 mt-1">AOV ${Number(dashboardData?.summary.averageOrderValue || 0).toFixed(2)}</p>
+                    <p className="text-sm text-emerald-700 mt-1">AOV {formatINR(Number(dashboardData?.summary.averageOrderValue || 0))}</p>
                   </div>
 
                   <div className="rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
@@ -654,11 +653,11 @@ export default function AdminPortal() {
                           <div key={order.id} className="rounded-xl border border-white bg-white px-3 py-2 flex items-center justify-between gap-3">
                             <div>
                               <p className="text-sm font-semibold text-gray-900">{order.userEmail || "Customer"}</p>
-                              <p className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleString()} • {order.items?.length || 0} items</p>
+                              <p className="text-xs text-gray-500">{formatIndianDateTime(order.createdAt)} • {order.items?.length || 0} items</p>
                             </div>
                             <div className="flex flex-col items-end gap-2 text-right">
                               <div>
-                                <p className="text-sm font-bold text-gray-900">${Number(order.total || 0).toFixed(2)}</p>
+                                <p className="text-sm font-bold text-gray-900">{formatINR(Number(order.total || 0))}</p>
                                 <p className="text-xs text-gray-500">{order.status}</p>
                               </div>
                               <select
@@ -774,9 +773,9 @@ export default function AdminPortal() {
                 {/* Pricing & Stock */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Price (in USD) <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Price (in INR) <span className="text-red-500">*</span></label>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
                       <Input 
                         required 
                         type="number" 
@@ -884,7 +883,7 @@ export default function AdminPortal() {
                       </div>
                       <div>
                         <h3 className="font-bold text-gray-900">{product.name}</h3>
-                        <p className="text-sm text-gray-500">${product.price} • {product.category} • In stock: {product.stock}</p>
+                        <p className="text-sm text-gray-500">{formatINR(normalizeCatalogPriceToINR(Number(product.price || 0)))} • {product.category} • In stock: {product.stock}</p>
                       </div>
                     </div>
                     <div>
@@ -962,7 +961,7 @@ export default function AdminPortal() {
                           <div>
                             <p className="text-sm text-gray-500">{review.productName} • {review.productCategory || "General"}</p>
                             <h3 className="font-bold text-gray-900">{review.title}</h3>
-                            <p className="text-sm text-gray-500">By {review.userName} ({review.userEmail}) • {new Date(review.createdAt).toLocaleDateString()}</p>
+                            <p className="text-sm text-gray-500">By {review.userName} ({review.userEmail}) • {formatIndianDate(review.createdAt)}</p>
                           </div>
                           <span className="text-xs px-2 py-1 rounded-full bg-gray-200 text-gray-700 font-semibold uppercase">{review.moderationStatus}</span>
                         </div>
@@ -1054,7 +1053,7 @@ export default function AdminPortal() {
                       <div className="mt-2 text-sm text-gray-600">
                         <p>
                           Action by <span className="font-semibold text-gray-800">{item.moderatorName}</span>{" "}
-                          on {new Date(item.moderatedAt || item.createdAt).toLocaleString()}
+                          on {formatIndianDateTime(item.moderatedAt || item.createdAt)}
                         </p>
                         {item.moderationNote ? (
                           <p className="mt-1 rounded-lg bg-white px-3 py-2 border border-gray-200">Note: {item.moderationNote}</p>

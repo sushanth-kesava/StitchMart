@@ -63,6 +63,15 @@ export type SuperAdminDashboardPayload = {
   accessRequests: SuperAdminAccessRequest[];
 };
 
+export type ManagedRole = "customer" | "admin" | "superadmin";
+
+export type SuperAdminManagedAccount = {
+  email: string;
+  role: ManagedRole;
+  source: "user" | "admin_profile";
+  active: boolean;
+};
+
 export async function getSuperAdminDashboardFromBackend(token: string): Promise<SuperAdminDashboardPayload> {
   const response = await fetch(`${API_BASE_URL}/superadmin/dashboard`, {
     headers: {
@@ -135,4 +144,29 @@ export async function reviewAccessRequestOnBackend(
   }
 
   return data.request as SuperAdminAccessRequest;
+}
+
+export async function updateUserRoleOnBackend(
+  token: string,
+  payload: {
+    email: string;
+    role: ManagedRole;
+  }
+): Promise<SuperAdminManagedAccount> {
+  const response = await fetch(`${API_BASE_URL}/superadmin/users/role`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data?.success) {
+    throw new Error(data?.message || "Failed to update user role");
+  }
+
+  return data.account as SuperAdminManagedAccount;
 }
