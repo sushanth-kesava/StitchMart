@@ -193,7 +193,7 @@ export default function CustomizePage() {
                     <p className="text-white/70">Get this combination stitched and delivered to your doorstep.</p>
                   </div>
                   <div className="flex gap-4">
-                    <Button size="lg" variant="outline" className="rounded-full border-white/20 text-white hover:bg-white/10 px-8">
+                    <Button size="lg" variant="outline" className="rounded-full border-white/20 text-black hover:bg-white/10 px-8">
                       Save as Draft
                     </Button>
                     <Button size="lg" className="rounded-full bg-accent text-accent-foreground hover:bg-accent/90 px-8 font-bold">

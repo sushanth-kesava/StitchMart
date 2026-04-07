@@ -205,7 +205,6 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
   const [openSizeGuide, setOpenSizeGuide] = useState(false);
   const [openFullscreenGallery, setOpenFullscreenGallery] = useState(false);
   const [selectedGalleryImage, setSelectedGalleryImage] = useState<string | null>(null);
-  const [zoomOrigin, setZoomOrigin] = useState("50% 50%");
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [bodyChestCm, setBodyChestCm] = useState(96);
@@ -733,8 +732,8 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
       <main className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           {/* Image Display */}
-          <div className="space-y-6">
-            <div className="relative aspect-square rounded-[40px] overflow-hidden bg-muted border shadow-2xl group">
+          <div className="relative mx-auto w-full max-w-[720px] space-y-6 lg:mx-3">
+            <div className="relative aspect-square rounded-[40px] overflow-hidden bg-muted border shadow-2xl">
               <button
                 type="button"
                 aria-label="Open fullscreen gallery"
@@ -744,20 +743,16 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
               >
                 <Maximize2 className="h-4 w-4" />
               </button>
+              <div
+                className="relative h-full w-full"
+              >
               <Image 
                 src={displayImage} 
                 alt={product.name} 
                 fill 
-                onMouseMove={(event) => {
-                  const rect = event.currentTarget.getBoundingClientRect();
-                  const x = ((event.clientX - rect.left) / rect.width) * 100;
-                  const y = ((event.clientY - rect.top) / rect.height) * 100;
-                  setZoomOrigin(`${x}% ${y}%`);
-                }}
-                onMouseLeave={() => setZoomOrigin("50% 50%")}
-                style={{ transformOrigin: zoomOrigin }}
-                className="object-cover transition-transform duration-500 group-hover:scale-125"
+                className="object-cover"
               />
+              </div>
               {visualizedImg && (
                 <div className="absolute top-6 left-6">
                   <Badge className="bg-primary/90 backdrop-blur-md shadow-xl border-none px-4 py-2 text-sm font-bold flex items-center gap-2">
@@ -766,7 +761,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                 </div>
               )}
             </div>
-            
+
             <div className="grid grid-cols-4 gap-4">
               {galleryImages.map((img, i) => (
                 <button 

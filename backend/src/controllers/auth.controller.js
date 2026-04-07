@@ -4,6 +4,7 @@ const User = require("../models/User");
 const AdminProfile = require("../models/AdminProfile");
 const AccessRequest = require("../models/AccessRequest");
 const env = require("../config/env");
+const { sendWelcomeEmail } = require("../services/mail.service");
 
 function calculateExpiryDate(expiresInSeconds) {
   if (!expiresInSeconds || Number.isNaN(Number(expiresInSeconds))) {
@@ -123,6 +124,7 @@ async function loginWithGoogle(req, res, next) {
     };
 
     let authDocument;
+    let shouldSendWelcomeEmail = false;
 
     if (requestedPrivilegedRole === "admin") {
       const isAllowedPrivilegedEmail = emailAllowedAsAdmin || Boolean(existingAdmin);
@@ -160,6 +162,7 @@ async function loginWithGoogle(req, res, next) {
 
       await User.deleteOne({ email: userPayload.email });
 
+      const isNewAdmin = !existingAdmin;
       const adminDocument = existingAdmin || new AdminProfile({ email: userPayload.email });
       adminDocument.googleId = userPayload.googleId;
       adminDocument.displayName = userPayload.displayName;
@@ -170,8 +173,10 @@ async function loginWithGoogle(req, res, next) {
       adminDocument.lastAdminLoginAt = new Date();
       adminDocument.loginCount = Number(adminDocument.loginCount || 0) + 1;
       authDocument = await adminDocument.save();
+      shouldSendWelcomeEmail = isNewAdmin;
     } else {
       if (existingAdmin || inferredRole === "admin" || inferredRole === "superadmin") {
+        const isNewAdmin = !existingAdmin;
         const adminDocument = existingAdmin || new AdminProfile({ email: userPayload.email });
         adminDocument.googleId = userPayload.googleId;
         adminDocument.displayName = userPayload.displayName;
@@ -182,12 +187,14 @@ async function loginWithGoogle(req, res, next) {
         adminDocument.lastAdminLoginAt = new Date();
         adminDocument.loginCount = Number(adminDocument.loginCount || 0) + 1;
         authDocument = await adminDocument.save();
+        shouldSendWelcomeEmail = isNewAdmin;
       } else if (existingUser) {
         Object.assign(existingUser, userPayload);
         authDocument = await existingUser.save();
       } else {
         try {
           authDocument = await User.create(userPayload);
+          shouldSendWelcomeEmail = true;
         } catch (createError) {
           if (createError?.code === 11000) {
             const fallbackUser = await User.findOne({ email: userPayload.email });
@@ -213,6 +220,15 @@ async function loginWithGoogle(req, res, next) {
 
     const jwtOptions = env.jwtExpiresIn ? { expiresIn: env.jwtExpiresIn } : undefined;
     const appToken = jwt.sign(jwtPayload, env.jwtSecret, jwtOptions);
+
+    if (shouldSendWelcomeEmail) {
+      sendWelcomeEmail({
+        to: authDocument.email,
+        displayName: authDocument.displayName,
+      }).catch((mailError) => {
+        console.error("Welcome email failed:", mailError.message || mailError);
+      });
+    }
 
     return res.status(200).json({
       success: true,

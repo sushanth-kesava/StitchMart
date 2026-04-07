@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -10,13 +10,19 @@ import { Navbar } from "@/components/navbar";
 import { loginWithGoogleOnBackend } from "@/lib/api/auth";
 import { useToast } from "@/hooks/use-toast";
 import { BRAND_ASSET_URL } from "@/lib/brand";
-import { getPortalPathForRole, persistAuthSession } from "@/lib/auth-session";
+import { isAuthenticated, persistAuthSession } from "@/lib/auth-session";
 
 export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState<"customer" | "admin">("customer");
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      router.replace("/");
+    }
+  }, [router]);
 
   const signup = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -44,7 +50,7 @@ export default function SignupPage() {
         }
 
         persistAuthSession(result.token, result.user);
-        router.replace(getPortalPathForRole(result.user.role));
+        router.replace("/");
         
       } catch (error) {
         toast({

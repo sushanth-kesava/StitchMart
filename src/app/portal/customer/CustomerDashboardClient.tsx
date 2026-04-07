@@ -67,16 +67,16 @@ export default function CustomerDashboardClient({ recommendations }: any) {
           }
 
           clearAuthSession();
-          router.replace("/login");
+          router.replace("/");
           return;
         } catch (error) {
           clearAuthSession();
-          router.replace("/login");
+          router.replace("/");
           return;
         }
       }
 
-      router.replace("/login");
+      router.replace("/");
     };
 
     void loadSession();

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { googleLogout } from '@react-oauth/google';
 import { CART_UPDATED_EVENT, getCartItemCount } from "@/lib/cart";
 import { clearAuthSession, getPortalPathForRole } from "@/lib/auth-session";
@@ -22,6 +23,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5
 export const BRAND_LOGO_URL = "https://res.cloudinary.com/doefhzx01/image/upload/v1775491592/Antariya-icon_1_mzdn29.png";
 
 export function Navbar() {
+  const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [cartCount, setCartCount] = useState(0);
@@ -89,6 +91,7 @@ export function Navbar() {
     googleLogout();
     setUser(null);
     clearAuthSession();
+    router.replace("/");
   };
 
   return (

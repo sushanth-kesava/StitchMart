@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -9,13 +9,19 @@ import { ArrowRight, Loader2, ShieldCheck, Sparkles } from "lucide-react";
 import { BRAND_LOGO_URL, Navbar } from "@/components/navbar";
 import { loginWithGoogleOnBackend } from "@/lib/api/auth";
 import { useToast } from "@/hooks/use-toast";
-import { getPortalPathForRole, persistAuthSession } from "@/lib/auth-session";
+import { isAuthenticated, persistAuthSession } from "@/lib/auth-session";
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState<"customer" | "admin">("customer");
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      router.replace("/");
+    }
+  }, [router]);
 
   const handleAuthFailure = (error: unknown) => {
     const description = error instanceof Error ? error.message : "We could not complete sign in. Please try again.";
@@ -52,7 +58,7 @@ export default function LoginPage() {
         }
 
         persistAuthSession(result.token, result.user);
-        router.replace(getPortalPathForRole(result.user.role));
+        router.replace("/");
       } catch (error) {
         handleAuthFailure(error);
       } finally {

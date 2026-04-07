@@ -36,10 +36,32 @@ export function persistAuthSession(token: string, user: AuthSessionUser) {
   localStorage.setItem("app_auth_token", token);
   localStorage.setItem("google_auth_user", JSON.stringify(user));
   localStorage.setItem("user_role", normalizeAppRole(user.role));
+
+  if (typeof document !== "undefined") {
+    const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+    const secureFlag = isHttps ? "; Secure" : "";
+    document.cookie = `app_auth_token=${encodeURIComponent(token)}; Path=/; Max-Age=${60 * 60 * 24 * 7}; SameSite=Lax${secureFlag}`;
+  }
 }
 
 export function clearAuthSession() {
   localStorage.removeItem("app_auth_token");
   localStorage.removeItem("google_auth_user");
   localStorage.removeItem("user_role");
+
+  if (typeof document !== "undefined") {
+    document.cookie = "app_auth_token=; Path=/; Max-Age=0; SameSite=Lax";
+  }
+}
+
+export function getAuthToken(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return localStorage.getItem("app_auth_token");
+}
+
+export function isAuthenticated(): boolean {
+  return Boolean(getAuthToken());
 }
