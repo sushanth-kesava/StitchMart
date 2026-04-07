@@ -87,7 +87,7 @@ export default function CustomerDashboardClient({ recommendations }: any) {
   const isNewCustomer = orders.length === 0;
 
   return (
-    <div className="flex-1 flex flex-col lg:flex-row container mx-auto px-4 py-8 gap-8">
+    <div className="flex-1 flex flex-col lg:flex-row w-full max-w-[1760px] mx-auto px-3 sm:px-4 lg:px-6 py-8 gap-8">
       {/* Sidebar - responsive: hidden on small screens */}
       <aside className="w-full lg:w-64 space-y-4">
         <div className="bg-card border shadow-sm rounded-2xl p-6 space-y-6">

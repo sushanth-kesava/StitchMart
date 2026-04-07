@@ -37,7 +37,7 @@ export default function HoodieCatalog() {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <main className="container mx-auto px-4 py-16">
+      <main className="w-full max-w-[1760px] mx-auto px-3 sm:px-4 lg:px-6 py-16">
         <div className="flex flex-col gap-12">
           {/* Hero Banner for Hoodies */}
           <div className="relative rounded-[40px] overflow-hidden bg-secondary text-white p-12 md:p-20 shadow-2xl">

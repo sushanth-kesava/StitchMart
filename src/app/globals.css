@@ -51,10 +51,14 @@
   * {
     @apply border-border;
   }
+  html {
+    font-size: 100%;
+  }
   body {
     @apply bg-background text-foreground font-body;
     background-image: radial-gradient(rgba(212, 99, 17, 0.03) 1px, transparent 1px);
     background-size: 40px 40px;
+    zoom: 0.9;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-headline;

@@ -65,7 +65,7 @@ export default function CustomizePage() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="container mx-auto px-4 py-12">
+      <main className="w-full max-w-[1760px] mx-auto px-3 sm:px-4 lg:px-6 py-12">
         <div className="flex flex-col gap-12">
           <div className="text-center space-y-4">
             <Badge variant="secondary" className="bg-primary/10 text-primary border-none px-4 py-1">

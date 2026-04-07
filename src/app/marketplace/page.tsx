@@ -43,7 +43,7 @@ export default function Marketplace() {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <main className="container mx-auto px-4 py-12">
+      <main className="w-full max-w-[1760px] mx-auto px-3 sm:px-4 lg:px-6 py-12">
         <div className="flex flex-col gap-10">
           
           {/* Enhanced Links Hero Section */}

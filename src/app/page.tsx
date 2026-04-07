@@ -51,7 +51,7 @@ export default function Home() {
 
         {/* Categories Section */}
         <section className="py-16 bg-muted/30">
-          <div className="container mx-auto px-4">
+          <div className="w-full max-w-[1760px] mx-auto px-3 sm:px-4 lg:px-6">
             <div className="flex items-end justify-between mb-8">
               <div className="space-y-2">
                 <h2 className="text-3xl font-bold font-headline">Shop by Category</h2>
@@ -81,7 +81,7 @@ export default function Home() {
 
         {/* Featured Products */}
         <section className="py-20">
-          <div className="container mx-auto px-4">
+          <div className="w-full max-w-[1760px] mx-auto px-3 sm:px-4 lg:px-6">
             <div className="flex items-center justify-between mb-10">
               <h2 className="text-4xl font-bold font-headline">Bestsellers in India</h2>
               <div className="flex items-center gap-2">
@@ -124,7 +124,7 @@ export default function Home() {
 
         {/* Why Choose Us */}
         <section className="py-20 bg-primary/5">
-          <div className="container mx-auto px-4">
+          <div className="w-full max-w-[1760px] mx-auto px-3 sm:px-4 lg:px-6">
             <div className="grid md:grid-cols-4 gap-8 text-center">
               <div className="space-y-4">
                 <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mx-auto text-primary">
@@ -160,7 +160,7 @@ export default function Home() {
 
         {/* Newsletter/CTA */}
         <section className="py-20">
-          <div className="container mx-auto px-4">
+          <div className="w-full max-w-[1760px] mx-auto px-3 sm:px-4 lg:px-6">
             <div className="bg-secondary rounded-3xl p-8 lg:p-16 flex flex-col lg:flex-row items-center gap-12 relative overflow-hidden shadow-2xl">
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
               <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
@@ -191,7 +191,7 @@ export default function Home() {
       </main>
 
       <footer className="bg-card border-t pt-20 pb-10">
-        <div className="container mx-auto px-4">
+        <div className="w-full max-w-[1760px] mx-auto px-3 sm:px-4 lg:px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
             <div className="space-y-6">
               <Link href="/" className="flex items-center gap-2">

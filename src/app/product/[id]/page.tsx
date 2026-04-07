@@ -729,7 +729,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
       ) : null}
       <Navbar />
       
-      <main className="container mx-auto px-4 py-12">
+      <main className="w-full max-w-[1760px] mx-auto px-3 sm:px-4 lg:px-6 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           {/* Image Display */}
           <div className="relative mx-auto w-full max-w-[720px] space-y-6 lg:mx-3">

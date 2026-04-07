@@ -96,7 +96,7 @@ export function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4 h-20 flex items-center justify-between gap-4">
+      <div className="w-full max-w-[1760px] mx-auto px-3 sm:px-4 lg:px-6 h-20 flex items-center justify-between gap-4">
         <div className="flex items-center gap-8">
           <Link href={logoHref} className="flex items-center group">
             <img

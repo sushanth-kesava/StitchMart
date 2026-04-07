@@ -411,7 +411,7 @@ export default function AdminPortal() {
     <div className="min-h-screen bg-gray-50/50 flex flex-col font-sans">
       <Navbar />
       
-      <div className="flex-1 flex flex-col lg:flex-row container mx-auto px-4 py-8 gap-8">
+      <div className="flex-1 flex flex-col lg:flex-row w-full max-w-[1760px] mx-auto px-3 sm:px-4 lg:px-6 py-8 gap-8">
         
         {/* Admin Sidebar */}
         <aside className="w-full lg:w-72 space-y-4">

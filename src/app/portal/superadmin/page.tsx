@@ -263,7 +263,7 @@ export default function SuperAdminPortalPage() {
   return (
     <div className="min-h-screen bg-gray-50/50 flex flex-col font-sans">
       <Navbar />
-      <div className="flex-1 container mx-auto px-4 py-8 space-y-8">
+      <div className="flex-1 w-full max-w-[1760px] mx-auto px-3 sm:px-4 lg:px-6 py-8 space-y-8">
         <Card className="rounded-[32px] border-gray-100 shadow-xl overflow-hidden bg-white">
           <CardHeader className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">

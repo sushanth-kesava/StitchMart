@@ -8,7 +8,7 @@ export function Hero() {
     <div className="relative overflow-hidden bg-background pt-16 pb-24 lg:pt-32 lg:pb-40">
       <div className="absolute inset-0 z-0 indian-motif-bg opacity-10" />
       
-      <div className="container relative z-10 mx-auto px-4">
+      <div className="w-full max-w-[1760px] relative z-10 mx-auto px-3 sm:px-4 lg:px-6">
         <div className="flex flex-col lg:flex-row items-center gap-12">
           <div className="flex-1 space-y-8 animate-fade-in">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium border border-primary/20">
