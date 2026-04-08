@@ -32,7 +32,7 @@ const RecommendedProductSchema = z.object({
   productName: z.string().describe('The name of the recommended product.'),
   category:
     z.string().describe(
-      'The category of the recommended product (e.g., Embroidery Designs, Machine Threads, Fabrics, Stabilizers, Needles, Hoops & Frames, Spare Parts, Accessories).'
+      'The category of the recommended product (e.g., Embroidery Designs, Machine Threads, Fabrics, Needles, Accessories).'
     ),
   reason: z.string().describe('A brief explanation of why this product is recommended.'),
 });
@@ -99,7 +99,7 @@ Consider the following information about the customer:
 - Current Interest/Query: {{{currentQuery}}}
 {{/if}}
 
-Based on this information, recommend 3-5 distinct products from the embroidery industry. Focus on categories such as Embroidery Designs, Machine Threads, Fabrics, Stabilizers, Needles, Hoops & Frames, Spare Parts, and Accessories.
+Based on this information, recommend 3-5 distinct products from the embroidery industry. Focus on categories such as Embroidery Designs, Machine Threads, Fabrics, Needles, and Accessories.
 
 For each recommendation, provide:
 1. A unique 'productId' (can be a generated placeholder if a real one is not known).

@@ -26,10 +26,7 @@ export const CATEGORIES = [
   'Embroidery Designs',
   'Machine Threads',
   'Fabrics',
-  'Stabilizers',
   'Needles',
-  'Hoops & Frames',
-  'Spare Parts',
   'Accessories',
   'Hoodies',
   'Blouses'
