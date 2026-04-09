@@ -7,7 +7,9 @@ export type ProductInput = {
   description: string;
   price: number;
   category: string;
-  image: string;
+  image?: string;
+  images?: string[];
+  galleryImages?: string[];
   stock: number;
   rating?: number;
   customizable?: boolean;
@@ -223,6 +225,30 @@ export async function createProductOnBackend(token: string, payload: ProductInpu
   }
 
   return data.product as Product;
+}
+
+export async function uploadProductImagesToBackend(token: string, files: File[]): Promise<string[]> {
+  const formData = new FormData();
+
+  for (const file of files.slice(0, 6)) {
+    formData.append("images", file);
+  }
+
+  const response = await fetch(`${API_BASE_URL}/products/upload-images`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data?.success) {
+    throw new Error(data?.message || "Failed to upload product images");
+  }
+
+  return Array.isArray(data.images) ? (data.images as string[]) : [];
 }
 
 export async function deleteProductOnBackend(token: string, productId: string): Promise<void> {

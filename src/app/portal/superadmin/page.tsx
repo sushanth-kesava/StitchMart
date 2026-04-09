@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   ArrowRight,
-  CheckCircle2,
   Loader2,
   Shield,
   ShieldCheck,
@@ -20,18 +19,14 @@ import {
   ShoppingCart,
   Heart,
   Package,
-  XCircle,
   Clock3,
 } from "lucide-react";
 import {
   getSuperAdminDashboardFromBackend,
   ManagedRole,
-  reviewAccessRequestOnBackend,
-  SuperAdminAccessRequest,
   SuperAdminCustomerProfile,
   SuperAdminDashboardPayload,
   SuperAdminProfile,
-  SuperadminRequestStatus,
   updateUserRoleOnBackend,
 } from "@/lib/api/superadmin";
 import { formatINR } from "@/lib/india";
@@ -47,9 +42,6 @@ export default function SuperAdminPortalPage() {
   const [user, setUser] = useState<any>(null);
   const [dashboard, setDashboard] = useState<SuperAdminDashboardPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
-  const [requestStatus, setRequestStatus] = useState<SuperadminRequestStatus | "all">("pending");
-  const [reviewingRequestId, setReviewingRequestId] = useState<string | null>(null);
   const [roleTargetEmail, setRoleTargetEmail] = useState("");
   const [roleTarget, setRoleTarget] = useState<ManagedRole>("admin");
   const [updatingRole, setUpdatingRole] = useState(false);
@@ -98,51 +90,6 @@ export default function SuperAdminPortalPage() {
 
     void loadSession();
   }, [router]);
-
-  const filteredRequests = useMemo(() => {
-    const requests = dashboard?.accessRequests || [];
-    const query = search.trim().toLowerCase();
-
-    return requests.filter((request) => {
-      const matchesStatus = requestStatus === "all" ? true : request.status === requestStatus;
-      const matchesQuery =
-        query.length === 0
-          ? true
-          : [request.title, request.message, request.requestedByEmail, request.targetEmail || "", request.targetName || "", request.requestType]
-              .join(" ")
-              .toLowerCase()
-              .includes(query);
-
-      return matchesStatus && matchesQuery;
-    });
-  }, [dashboard?.accessRequests, requestStatus, search]);
-
-  const handleReview = async (requestId: string, status: "approved" | "rejected") => {
-    if (!authToken) {
-      return;
-    }
-
-    try {
-      setReviewingRequestId(requestId);
-      const reviewNote = window.prompt("Optional review note:", "")?.trim() || undefined;
-      const updated = await reviewAccessRequestOnBackend(authToken, requestId, status, reviewNote);
-
-      setDashboard((current) => {
-        if (!current) {
-          return current;
-        }
-
-        return {
-          ...current,
-          accessRequests: current.accessRequests.map((request) => (request.id === requestId ? updated : request)),
-        };
-      });
-    } catch (reviewError) {
-      setError(reviewError instanceof Error ? reviewError.message : "Failed to review request.");
-    } finally {
-      setReviewingRequestId(null);
-    }
-  };
 
   const handleRoleUpdate = async () => {
     if (!authToken || updatingRole) {
@@ -271,7 +218,7 @@ export default function SuperAdminPortalPage() {
                 <Badge className="bg-white/10 text-white border-white/20 w-fit">Super Admin Console</Badge>
                 <CardTitle className="text-4xl font-black tracking-tight">Full platform control</CardTitle>
                 <CardDescription className="text-slate-200 text-base">
-                  Manage admins, customers, access requests, and operational risks from a single supervisory dashboard.
+                  Manage admins, customers, and operational risks from a single supervisory dashboard.
                 </CardDescription>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
@@ -317,89 +264,6 @@ export default function SuperAdminPortalPage() {
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-              <Card className="rounded-[28px] border-gray-100 shadow-sm bg-white">
-                <CardHeader>
-                  <CardTitle className="text-xl flex items-center gap-2"><Shield className="h-5 w-5 text-slate-700" /> Access Requests</CardTitle>
-                  <CardDescription>Approve or reject requests for admin and super-admin access.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <select
-                      title="Request status filter"
-                      aria-label="Request status filter"
-                      value={requestStatus}
-                      onChange={(event) => setRequestStatus(event.target.value as SuperadminRequestStatus | "all")}
-                      className="h-11 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm outline-none focus:ring-2 focus:ring-primary"
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="approved">Approved</option>
-                      <option value="rejected">Rejected</option>
-                      <option value="all">All</option>
-                    </select>
-                    <Input
-                      placeholder="Search requests"
-                      value={search}
-                      onChange={(event) => setSearch(event.target.value)}
-                      className="h-11 rounded-xl border-gray-200 bg-gray-50"
-                    />
-                    <Button type="button" variant="secondary" className="h-11 rounded-xl" onClick={() => { setSearch(""); setRequestStatus("pending"); }}>
-                      Clear
-                    </Button>
-                  </div>
-
-                  {filteredRequests.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-center text-sm text-muted-foreground">
-                      No access requests match the current filters.
-                    </div>
-                  ) : (
-                    <div className="space-y-3 max-h-[520px] overflow-auto pr-1">
-                      {filteredRequests.map((request) => (
-                        <div key={request.id} className="rounded-2xl border border-gray-200 bg-gray-50/70 p-4 space-y-3">
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <p className="font-semibold text-gray-900">{request.title}</p>
-                              <p className="text-xs text-gray-500">{request.requestedByEmail} • {request.requestType}</p>
-                              <p className="text-xs text-gray-500">{request.targetEmail ? `Target: ${request.targetEmail}` : "No target email"}</p>
-                            </div>
-                            <Badge variant="secondary" className="uppercase tracking-wide rounded-full">{request.status}</Badge>
-                          </div>
-                          <p className="text-sm text-gray-700 leading-relaxed">{request.message}</p>
-                          <div className="flex flex-wrap gap-2">
-                            {request.requestedScopes.map((scope) => (
-                              <Badge key={scope} variant="outline" className="rounded-full">{scope}</Badge>
-                            ))}
-                          </div>
-                          <div className="flex flex-col sm:flex-row gap-2">
-                            <Button
-                              type="button"
-                              size="sm"
-                              className="rounded-full"
-                              disabled={reviewingRequestId === request.id || request.status !== "pending"}
-                              onClick={() => handleReview(request.id, "approved")}
-                            >
-                              <CheckCircle2 className="mr-2 h-4 w-4" /> Approve
-                            </Button>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="secondary"
-                              className="rounded-full"
-                              disabled={reviewingRequestId === request.id || request.status !== "pending"}
-                              onClick={() => handleReview(request.id, "rejected")}
-                            >
-                              <XCircle className="mr-2 h-4 w-4" /> Reject
-                            </Button>
-                          </div>
-                          {request.reviewNote ? (
-                            <p className="text-xs text-gray-500 rounded-xl bg-white px-3 py-2 border border-gray-200">Review note: {request.reviewNote}</p>
-                          ) : null}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
               <Card className="rounded-[28px] border-gray-100 shadow-sm bg-white">
                 <CardHeader>
                   <CardTitle className="text-xl flex items-center gap-2"><UserCog className="h-5 w-5 text-slate-700" /> Platform Profiles</CardTitle>

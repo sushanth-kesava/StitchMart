@@ -45,6 +45,9 @@ const env = {
   smtpPass: process.env.SMTP_PASS || process.env.EMAIL_PASSWORD,
   mailFromEmail: process.env.MAIL_FROM_EMAIL || process.env.EMAIL_USER,
   mailFromName: process.env.MAIL_FROM_NAME || process.env.APP_NAME || "StitchMart",
+  cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME,
+  cloudinaryApiKey: process.env.CLOUDINARY_API_KEY,
+  cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET,
 };
 
 const requiredVars = ["MONGODB_URI", "JWT_SECRET"];

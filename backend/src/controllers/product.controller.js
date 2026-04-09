@@ -2,6 +2,8 @@ const Product = require("../models/Product");
 const Review = require("../models/Review");
 const User = require("../models/User");
 const AdminProfile = require("../models/AdminProfile");
+const multer = require("multer");
+const { uploadProductImageBuffer } = require("../services/cloudinary.service");
 
 const seedProductsData = [
   {
@@ -71,10 +73,69 @@ const seedProductsData = [
   },
 ];
 
+const MAX_PRODUCT_IMAGES = 6;
+const MAX_PRODUCT_IMAGE_SIZE_BYTES = 8 * 1024 * 1024;
+
+const productImageUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    files: MAX_PRODUCT_IMAGES,
+    fileSize: MAX_PRODUCT_IMAGE_SIZE_BYTES,
+  },
+  fileFilter: (req, file, cb) => {
+    if (typeof file.mimetype === "string" && file.mimetype.startsWith("image/")) {
+      cb(null, true);
+      return;
+    }
+
+    cb(new Error("Only image files are allowed"));
+  },
+}).array("images", MAX_PRODUCT_IMAGES);
+
+function productImageUploadMiddleware(req, res, next) {
+  productImageUpload(req, res, (error) => {
+    if (!error) {
+      next();
+      return;
+    }
+
+    if (error instanceof multer.MulterError) {
+      if (error.code === "LIMIT_FILE_SIZE") {
+        res.status(400).json({
+          success: false,
+          message: `Each image must be smaller than ${Math.floor(MAX_PRODUCT_IMAGE_SIZE_BYTES / (1024 * 1024))}MB`,
+        });
+        return;
+      }
+
+      if (error.code === "LIMIT_FILE_COUNT") {
+        res.status(400).json({
+          success: false,
+          message: `You can upload up to ${MAX_PRODUCT_IMAGES} images only`,
+        });
+        return;
+      }
+    }
+
+    res.status(400).json({
+      success: false,
+      message: error.message || "Invalid image upload",
+    });
+  });
+}
+
 function normalizeProduct(doc) {
-  const galleryImages = Array.isArray(doc.galleryImages)
+  const productImages = Array.isArray(doc.images)
+    ? doc.images.filter((item) => typeof item === "string" && item.trim().length > 0)
+    : [];
+
+  const legacyGalleryImages = Array.isArray(doc.galleryImages)
     ? doc.galleryImages.filter((item) => typeof item === "string" && item.trim().length > 0)
     : [];
+
+  const galleryImages = [...productImages, ...legacyGalleryImages].filter(
+    (item, index, array) => array.indexOf(item) === index
+  );
 
   if (!galleryImages.includes(doc.image)) {
     galleryImages.unshift(doc.image);
@@ -88,6 +149,7 @@ function normalizeProduct(doc) {
     category: doc.category,
     dealerId: doc.dealerId,
     image: doc.image,
+    images: galleryImages,
     galleryImages,
     stock: doc.stock,
     fileDownloadLink: doc.fileDownloadLink,
@@ -259,6 +321,53 @@ async function getProductById(req, res, next) {
   }
 }
 
+async function uploadProductImages(req, res, next) {
+  try {
+    if (req.auth?.role !== "admin" && req.auth?.role !== "superadmin") {
+      return res.status(403).json({
+        success: false,
+        message: "Only admin users can upload product images",
+      });
+    }
+
+    const files = Array.isArray(req.files) ? req.files : [];
+
+    if (files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Please upload at least one image",
+      });
+    }
+
+    const uploaded = await Promise.all(
+      files.map((file) =>
+        uploadProductImageBuffer(file.buffer, {
+          folder: `stitchmart/products/${req.auth.sub}`,
+        })
+      )
+    );
+
+    const imageUrls = uploaded
+      .map((item) => item?.secure_url)
+      .filter((value) => typeof value === "string" && value.trim().length > 0);
+
+    if (imageUrls.length === 0) {
+      return res.status(500).json({
+        success: false,
+        message: "No images were uploaded to Cloudinary",
+      });
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: "Images uploaded",
+      images: imageUrls,
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 async function createProduct(req, res, next) {
   try {
     if (req.auth?.role !== "admin" && req.auth?.role !== "superadmin") {
@@ -268,33 +377,30 @@ async function createProduct(req, res, next) {
       });
     }
 
-    const { name, description, price, category, image, galleryImages, stock, rating, customizable, fileDownloadLink } = req.body;
+    const { name, description, price, category, image, images, galleryImages, stock, rating, customizable, fileDownloadLink } = req.body;
 
-    if (!name || !description || typeof price === "undefined" || !category || !image) {
+    const normalizedGallery = (Array.isArray(images) ? images : Array.isArray(galleryImages) ? galleryImages : [image])
+      .filter((item) => typeof item === "string")
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0)
+      .slice(0, MAX_PRODUCT_IMAGES);
+
+    if (!name || !description || typeof price === "undefined" || !category || normalizedGallery.length === 0) {
       return res.status(400).json({
         success: false,
         message: "Missing required product fields",
       });
     }
 
-    const normalizedGallery = Array.isArray(galleryImages)
-      ? galleryImages
-          .filter((item) => typeof item === "string")
-          .map((item) => item.trim())
-          .filter((item) => item.length > 0)
-          .slice(0, 10)
-      : [];
-
-    if (!normalizedGallery.includes(image)) {
-      normalizedGallery.unshift(image);
-    }
+    const primaryImage = normalizedGallery[0];
 
     const product = await Product.create({
       name,
       description,
       price: Number(price),
       category,
-      image,
+      image: primaryImage,
+      images: normalizedGallery,
       galleryImages: normalizedGallery,
       stock: Number.isFinite(Number(stock)) ? Number(stock) : 0,
       rating: Number.isFinite(Number(rating)) ? Number(rating) : 0,
@@ -597,6 +703,8 @@ async function getReviewModerationActivity(req, res, next) {
 module.exports = {
   getProducts,
   getProductById,
+  uploadProductImages,
+  productImageUploadMiddleware,
   createProduct,
   deleteProduct,
   seedProducts,

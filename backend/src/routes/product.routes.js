@@ -2,6 +2,8 @@ const express = require("express");
 const {
   getProducts,
   getProductById,
+  uploadProductImages,
+  productImageUploadMiddleware,
   createProduct,
   deleteProduct,
   seedProducts,
@@ -19,6 +21,7 @@ router.get("/", getProducts);
 router.get("/admin/reviews/activity", requireAuth, getReviewModerationActivity);
 router.get("/admin/reviews", requireAuth, getReviewModerationQueue);
 router.patch("/admin/reviews/:reviewId", requireAuth, updateReviewModeration);
+router.post("/upload-images", requireAuth, productImageUploadMiddleware, uploadProductImages);
 router.get("/:id/reviews", getProductReviews);
 router.post("/:id/reviews", requireAuth, createProductReview);
 router.get("/:id", getProductById);

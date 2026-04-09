@@ -366,5 +366,6 @@ export default function CustomerDashboardClient({ recommendations }: any) {
 
       </main>
     </div>
+    </div>
   );
 }

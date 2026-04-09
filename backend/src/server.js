@@ -57,7 +57,7 @@ async function startServer() {
   try {
     await connectDb(env.mongoUri);
     app.listen(env.port, () => {
-      console.log(`Backend listening on http://localhost:${env.port}`);
+      console.log(`Server Started on port ${env.port}`);
     });
   } catch (error) {
     console.error("Failed to start backend:", error.message);
