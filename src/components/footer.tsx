@@ -18,7 +18,7 @@ export function Footer() {
           </div>
 
           <div className="border-t pt-8 w-full flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-muted-foreground">
-            <p>© 2024 Antariya India. All rights reserved.</p>
+            <p>© 2026 Antariya India. All rights reserved.</p>
             <div className="flex items-center gap-6">
               <Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link>
               <Link href="#" className="hover:text-primary transition-colors">Terms of Service</Link>
