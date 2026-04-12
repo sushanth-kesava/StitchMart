@@ -13,20 +13,20 @@ const {
   updateReviewModeration,
   getReviewModerationActivity,
 } = require("../controllers/product.controller");
-const { requireAuth } = require("../middleware/auth.middleware");
+const { requireAuth, requireRole } = require("../middleware/auth.middleware");
 
 const router = express.Router();
 
 router.get("/", getProducts);
-router.get("/admin/reviews/activity", requireAuth, getReviewModerationActivity);
-router.get("/admin/reviews", requireAuth, getReviewModerationQueue);
-router.patch("/admin/reviews/:reviewId", requireAuth, updateReviewModeration);
-router.post("/upload-images", requireAuth, productImageUploadMiddleware, uploadProductImages);
+router.get("/admin/reviews/activity", requireAuth, requireRole("admin", "superadmin"), getReviewModerationActivity);
+router.get("/admin/reviews", requireAuth, requireRole("admin", "superadmin"), getReviewModerationQueue);
+router.patch("/admin/reviews/:reviewId", requireAuth, requireRole("admin", "superadmin"), updateReviewModeration);
+router.post("/upload-images", requireAuth, requireRole("admin", "superadmin"), productImageUploadMiddleware, uploadProductImages);
 router.get("/:id/reviews", getProductReviews);
 router.post("/:id/reviews", requireAuth, createProductReview);
 router.get("/:id", getProductById);
-router.post("/", requireAuth, createProduct);
-router.delete("/:id", requireAuth, deleteProduct);
+router.post("/", requireAuth, requireRole("admin", "superadmin"), createProduct);
+router.delete("/:id", requireAuth, requireRole("admin", "superadmin"), deleteProduct);
 router.post("/seed", seedProducts);
 
 module.exports = router;

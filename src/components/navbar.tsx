@@ -18,18 +18,24 @@ import { useRouter } from "next/navigation";
 import { googleLogout } from '@react-oauth/google';
 import { CART_UPDATED_EVENT, getCartItemCount } from "@/lib/cart";
 import { clearAuthSession, getPortalPathForRole } from "@/lib/auth-session";
-import { BRAND_LOGO_URL } from "@/lib/brand";
+
+type AuthUser = {
+  role?: string;
+  photoURL?: string | null;
+  displayName?: string | null;
+  email?: string | null;
+};
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
 
 export function Navbar() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [cartCount, setCartCount] = useState(0);
 
   const portalHref = user?.role ? getPortalPathForRole(user.role) : "/portal/customer";
-  const logoHref = user?.role ? getPortalPathForRole(user.role) : "/";
+  const logoHref = "/#hero";
 
   // Validate session against backend on mount.
   useEffect(() => {
@@ -61,7 +67,7 @@ export function Navbar() {
 
         setUser(data.user);
         localStorage.setItem('google_auth_user', JSON.stringify(data.user));
-      } catch (error) {
+      } catch {
         clearAuthSession();
         setUser(null);
       } finally {
@@ -98,12 +104,10 @@ export function Navbar() {
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="w-full max-w-[1760px] mx-auto px-3 sm:px-4 lg:px-6 h-20 flex items-center justify-between gap-4">
         <div className="flex items-center gap-8">
-          <Link href={logoHref} className="flex items-center group">
-            <img
-              src={BRAND_LOGO_URL}
-              alt="Antariya logo"
-              className="h-16 w-auto max-w-[260px] rounded-2xl object-cover group-hover:scale-[1.02] transition-transform"
-            />
+          <Link href={logoHref} className="flex items-center gap-2 group">
+            <h1 className="font-theseasons text-5xl lg:text-5xl font-bold tracking-tight text-black leading-[1.1]">
+              Antariya
+            </h1> 
           </Link>
           
           <div className="hidden md:flex items-center gap-1">
@@ -154,6 +158,8 @@ export function Navbar() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full overflow-hidden border p-0 h-10 w-10">
                   {user.photoURL ? (
+                    // Avatar URLs can be remote; keep img here to avoid extra image loader config.
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
                   ) : (
                     <UserIcon className="h-5 w-5" />

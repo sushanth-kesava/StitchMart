@@ -26,6 +26,19 @@ type AuthResponse = {
   };
 };
 
+type CredentialsSignupPayload = {
+  email: string;
+  password: string;
+  displayName?: string;
+  role?: AppRole;
+};
+
+type CredentialsLoginPayload = {
+  email: string;
+  password: string;
+  role?: AppRole;
+};
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
 
 export async function loginWithGoogleOnBackend(payload: GoogleAuthPayload): Promise<AuthResponse> {
@@ -58,4 +71,44 @@ export async function loginWithGoogleOnBackend(payload: GoogleAuthPayload): Prom
   }
 
   return data;
+}
+
+async function postAuthRequest(path: string, payload: Record<string, unknown>): Promise<AuthResponse> {
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (error) {
+    const networkError = error instanceof Error ? error.message : "Network request failed";
+    throw new Error(
+      `Unable to reach authentication server (${API_BASE_URL}). Please verify backend is running and reachable. ${networkError}`
+    );
+  }
+
+  let data: AuthResponse | null = null;
+  try {
+    data = (await response.json()) as AuthResponse;
+  } catch {
+    data = null;
+  }
+
+  if (!response.ok || !data?.success) {
+    throw new Error(data?.message || `Authentication failed with status ${response.status}.`);
+  }
+
+  return data;
+}
+
+export async function signupWithCredentialsOnBackend(payload: CredentialsSignupPayload): Promise<AuthResponse> {
+  return postAuthRequest("/auth/signup", payload as Record<string, unknown>);
+}
+
+export async function loginWithCredentialsOnBackend(payload: CredentialsLoginPayload): Promise<AuthResponse> {
+  return postAuthRequest("/auth/login", payload as Record<string, unknown>);
 }

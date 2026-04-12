@@ -8,6 +8,7 @@ import { CATEGORIES, Product } from "@/app/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, Zap, ShieldCheck, Truck, RefreshCcw, Database } from "lucide-react";
 import Link from "next/link";
+import { BRAND_LOGO_URL } from "@/lib/brand";
 import { useEffect, useState } from "react";
 import { getProductsFromBackend, seedProductsOnBackend } from "@/lib/api/products";
 import { useToast } from "@/hooks/use-toast";
@@ -63,7 +64,7 @@ export default function Home() {
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-              {CATEGORIES.map((cat, idx) => (
+              {CATEGORIES.map((cat) => (
                 <Link 
                   key={cat} 
                   href={`/marketplace?category=${encodeURIComponent(cat)}`}
@@ -158,7 +159,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Newsletter/CTA */}
+        {/* Admin Upgrade Request */}
         <section className="py-20">
           <div className="w-full max-w-[1760px] mx-auto px-3 sm:px-4 lg:px-6">
             <div className="bg-secondary rounded-3xl p-8 lg:p-16 flex flex-col lg:flex-row items-center gap-12 relative overflow-hidden shadow-2xl">
@@ -166,24 +167,26 @@ export default function Home() {
               <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
               
               <div className="flex-1 space-y-6 text-white text-center lg:text-left relative z-10">
-                <h2 className="text-4xl lg:text-5xl font-bold font-headline">Launch Your Embroidery Business with Antariya</h2>
-                <p className="text-white/80 text-lg">Are you a supplier? Reach thousands of embroidery machine owners across India today.</p>
+                <h2 className="text-4xl lg:text-5xl font-bold font-theseasons">Request Admin Access Upgrade</h2>
+                <p className="text-white/80 text-lg">Enter your mail ID and request an upgrade from customer access to admin access. We will review the request and follow up by email.</p>
                 <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground rounded-full px-10">
-                  Register as Dealer
+                  <Link href="/admin-login" className="flex items-center gap-2">Admin Login</Link>
                 </Button>
               </div>
               
               <div className="flex-1 w-full max-w-md bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 relative z-10">
-                <h3 className="text-white font-bold text-xl mb-4">Subscribe for Free Designs</h3>
-                <div className="flex gap-2">
+                <h3 className="text-white font-bold text-xl mb-4">Mail ID for Upgrade Request</h3>
+                <div className="space-y-4">
                   <input 
                     type="email" 
-                    placeholder="Enter your email" 
-                    className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-accent"
+                    placeholder="Enter your mail ID" 
+                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-accent"
                   />
-                  <Button className="bg-white text-secondary hover:bg-white/90">Join</Button>
+                  <Button className="w-full bg-white text-secondary hover:bg-white/90 rounded-full">
+                    Send Request
+                  </Button>
+                  <p className="text-xs text-white/60 text-center">Use the email linked to your customer account so we can verify the upgrade request.</p>
                 </div>
-                <p className="text-xs text-white/60 mt-4 text-center">We value your privacy. Unsubscribe anytime.</p>
               </div>
             </div>
           </div>
@@ -195,13 +198,12 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
             <div className="space-y-6">
               <Link href="/" className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                  S
-                </div>
-                <span className="font-headline text-2xl font-bold text-primary">Antariya</span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={BRAND_LOGO_URL} alt="Antariya logo" className="h-32 w-32 rounded-lg object-cover" />
+                <span className="font-theseasons text-6xl font-bold text-black">Antariya</span>
               </Link>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                Empowering India's embroidery industry since 2024. Providing premium digital assets and hardware solutions for small and medium scale embroidery businesses.
+                Empowering India&apos;s embroidery industry since 2024. Providing premium digital assets and hardware solutions for small and medium scale embroidery businesses.
               </p>
             </div>
             
@@ -237,7 +239,7 @@ export default function Home() {
           </div>
           
           <div className="border-t pt-10 flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-muted-foreground">
-              <p>© 2024 Antariya India. All rights reserved.</p>
+              <p>© 2026 Antariya India. All rights reserved.</p>
             <div className="flex items-center gap-8">
               <Link href="#" className="hover:text-primary">Facebook</Link>
               <Link href="#" className="hover:text-primary">Instagram</Link>

@@ -5,7 +5,7 @@ import Image from "next/image";
 
 export function Hero() {
   return (
-    <div className="relative overflow-hidden bg-background pt-16 pb-24 lg:pt-32 lg:pb-40">
+    <div id="hero" className="relative overflow-hidden bg-background pt-16 pb-24 lg:pt-32 lg:pb-40">
       <div className="absolute inset-0 z-0 indian-motif-bg opacity-10" />
       
       <div className="w-full max-w-[1760px] relative z-10 mx-auto px-3 sm:px-4 lg:px-6">

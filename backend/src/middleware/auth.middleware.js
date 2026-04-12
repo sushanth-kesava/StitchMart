@@ -24,6 +24,24 @@ function requireAuth(req, res, next) {
   }
 }
 
+function requireRole(...allowedRoles) {
+  const normalizedAllowedRoles = allowedRoles.map((role) => String(role).trim().toLowerCase());
+
+  return function roleGuard(req, res, next) {
+    const currentRole = String(req.auth?.role || "").trim().toLowerCase();
+
+    if (!currentRole || !normalizedAllowedRoles.includes(currentRole)) {
+      return res.status(403).json({
+        success: false,
+        message: "You do not have permission to perform this action.",
+      });
+    }
+
+    return next();
+  };
+}
+
 module.exports = {
   requireAuth,
+  requireRole,
 };

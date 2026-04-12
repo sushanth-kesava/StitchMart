@@ -7,7 +7,7 @@ export default function SuperAdminLoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/login");
+    router.replace("/login?role=superadmin&next=/portal/superadmin");
   }, [router]);
 
   return null;

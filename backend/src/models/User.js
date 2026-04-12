@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
@@ -7,7 +8,8 @@ const userSchema = new mongoose.Schema(
     displayName: { type: String, required: true, trim: true },
     photoURL: { type: String, default: null },
     role: { type: String, enum: ["customer", "admin"], default: "customer" },
-    authProvider: { type: String, default: "google" },
+    authProvider: { type: String, enum: ["google", "credentials"], default: "google" },
+    passwordHash: { type: String, default: null },
     oauth: {
       provider: { type: String, default: "google" },
       providerUserId: { type: String, default: null },
