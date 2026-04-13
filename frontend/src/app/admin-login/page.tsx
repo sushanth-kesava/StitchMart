@@ -7,7 +7,7 @@ export default function AdminLoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/login?role=admin&next=/portal/admin");
+    router.replace("/login?role=admin&next=/portal/admin&force=1");
   }, [router]);
 
   return null;

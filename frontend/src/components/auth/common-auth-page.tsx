@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import {
+  clearAuthSession,
   getPortalPathForRole,
   isAuthenticated,
   normalizeAppRole,
@@ -26,6 +27,8 @@ import {
 } from "@/lib/api/auth";
 
 type AuthMode = "login" | "signup";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
 
 function sanitizeNextPath(path: string | null): string {
   const candidate = String(path || "").trim();
@@ -67,6 +70,7 @@ export default function CommonAuthPage({ mode }: { mode: AuthMode }) {
   const [displayName, setDisplayName] = useState("");
 
   const roleFromQuery = searchParams.get("role");
+  const forceSwitch = searchParams.get("force") === "1";
   const nextPath = useMemo(() => sanitizeNextPath(searchParams.get("next")), [searchParams]);
   const selectedRole = useMemo(() => normalizeRole(roleFromQuery), [roleFromQuery]);
   const selectedRoleForGoogle = selectedRole;
@@ -76,11 +80,64 @@ export default function CommonAuthPage({ mode }: { mode: AuthMode }) {
   const isPrivilegedCredentialsFlow = !isSignup && isPrivilegedRole;
 
   useEffect(() => {
-    if (isAuthenticated()) {
-      const storedRole = normalizeAppRole(localStorage.getItem("user_role"));
-      router.replace(nextPath || getPortalPathForRole(storedRole));
+    if (forceSwitch) {
+      clearAuthSession();
+      return;
     }
-  }, [router, nextPath, selectedRole]);
+
+    if (!isAuthenticated()) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const syncSession = async () => {
+      const token = localStorage.getItem("app_auth_token");
+
+      if (!token) {
+        clearAuthSession();
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data?.success || !data?.user) {
+          clearAuthSession();
+          return;
+        }
+
+        if (cancelled) {
+          return;
+        }
+
+        const normalizedUser = {
+          id: data.user.id,
+          email: data.user.email,
+          displayName: data.user.displayName,
+          photoURL: data.user.photoURL || null,
+          role: normalizeAppRole(data.user.role),
+        } as AuthSessionUser;
+
+        persistAuthSession(token, normalizedUser);
+        router.replace(nextPath || getPortalPathForRole(normalizedUser.role));
+      } catch {
+        clearAuthSession();
+      }
+    };
+
+    void syncSession();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [forceSwitch, nextPath, router]);
 
   const finishAuth = (token: string, user: AuthSessionUser) => {
     persistAuthSession(token, user);

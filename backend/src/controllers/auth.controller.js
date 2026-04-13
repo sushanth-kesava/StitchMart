@@ -128,20 +128,38 @@ async function loginWithGoogle(req, res, next) {
     const normalizedEmail = String(googleProfile.email).trim().toLowerCase();
     const existingAdmin = await AdminProfile.findOne({ email: normalizedEmail, active: true });
     const existingUser = await User.findOne({ email: normalizedEmail });
-    const emailAllowedAsSuperAdmin = env.superAdminAllowedEmails.includes(normalizedEmail);
-    const hasApprovedAdminProfile = Boolean(existingAdmin);
-    const isExistingSuperAdmin = existingAdmin?.role === "superadmin";
-    const enforcedSuperAdmin = emailAllowedAsSuperAdmin || isExistingSuperAdmin;
-    const inferredRole = enforcedSuperAdmin
-      ? "superadmin"
-      : hasApprovedAdminProfile
-        ? existingAdmin.role || "admin"
-        : existingUser
-          ? existingUser.role || "customer"
-          : "customer";
 
-    const requestedPrivilegedRole =
-      selectedRole === "superadmin" ? "superadmin" : selectedRole === "admin" ? "admin" : null;
+    const requestedRole = selectedRole || "customer";
+    const emailAllowedAsSuperAdmin = env.superAdminAllowedEmails.includes(normalizedEmail);
+    const emailAllowedAsAdmin = env.adminAllowedEmails.includes(normalizedEmail);
+    const existingAdminRole = existingAdmin?.role === "superadmin" ? "superadmin" : existingAdmin ? "admin" : "customer";
+
+    const inferredRole = emailAllowedAsSuperAdmin || existingAdminRole === "superadmin"
+      ? "superadmin"
+      : emailAllowedAsAdmin || existingAdminRole === "admin"
+        ? "admin"
+        : "customer";
+
+    if (requestedRole === "customer" && inferredRole !== "customer") {
+      return res.status(409).json({
+        success: false,
+        message: `This account is registered as ${inferredRole}. Please use the ${inferredRole} login portal.`,
+      });
+    }
+
+    if (requestedRole === "superadmin" && inferredRole !== "superadmin") {
+      return res.status(403).json({
+        success: false,
+        message: "This email is not allowed for superadmin access.",
+      });
+    }
+
+    if (requestedRole === "admin" && inferredRole === "superadmin") {
+      return res.status(409).json({
+        success: false,
+        message: "This account is registered as superadmin. Please use the superadmin login portal.",
+      });
+    }
 
     const userPayload = {
       googleId: googleProfile.sub,
@@ -164,7 +182,7 @@ async function loginWithGoogle(req, res, next) {
     let authDocument;
     let shouldSendWelcomeEmail = false;
 
-    if (enforcedSuperAdmin) {
+    if (inferredRole === "superadmin") {
 
       await User.deleteOne({ email: userPayload.email });
 
@@ -180,16 +198,11 @@ async function loginWithGoogle(req, res, next) {
       adminDocument.loginCount = Number(adminDocument.loginCount || 0) + 1;
       authDocument = await adminDocument.save();
       shouldSendWelcomeEmail = isNewSuperAdmin;
-    } else if (requestedPrivilegedRole === "superadmin") {
-      return res.status(403).json({
-        success: false,
-        message: "This email is not allowed for superadmin access.",
-      });
-    } else if (requestedPrivilegedRole === "admin") {
+    } else if (requestedRole === "admin" && inferredRole === "customer") {
       const isEligibleForAdminRequest =
         env.adminAllowedEmails.length === 0 || env.adminAllowedEmails.includes(normalizedEmail);
 
-      if (!hasApprovedAdminProfile) {
+      if (!existingAdmin) {
         if (!isEligibleForAdminRequest) {
           return res.status(403).json({
             success: false,
@@ -269,14 +282,14 @@ async function loginWithGoogle(req, res, next) {
       authDocument = await adminDocument.save();
       shouldSendWelcomeEmail = isNewAdmin;
     } else {
-      if (hasApprovedAdminProfile || inferredRole === "admin" || inferredRole === "superadmin") {
+      if (inferredRole === "admin") {
         const isNewAdmin = !existingAdmin;
         const adminDocument = existingAdmin || new AdminProfile({ email: userPayload.email });
         adminDocument.googleId = userPayload.googleId;
         adminDocument.displayName = userPayload.displayName;
         adminDocument.photoURL = userPayload.photoURL;
         adminDocument.provider = "google";
-        adminDocument.role = existingAdmin?.role || (inferredRole === "superadmin" ? "superadmin" : "admin");
+        adminDocument.role = existingAdmin?.role === "superadmin" ? "superadmin" : "admin";
         adminDocument.active = true;
         adminDocument.lastAdminLoginAt = new Date();
         adminDocument.loginCount = Number(adminDocument.loginCount || 0) + 1;
