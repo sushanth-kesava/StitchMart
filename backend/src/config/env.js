@@ -9,7 +9,7 @@ const env = {
   mongoUri: process.env.MONGODB_URI,
   jwtSecret: process.env.JWT_SECRET,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN,
-  frontendUrl: process.env.FRONTEND_URL || "http://localhost:9002",
+  frontendUrl: process.env.FRONTEND_URL || "https://antariyaofficial.com/",
   appName: process.env.APP_NAME || "StitchMart",
   adminAllowedEmails: String(process.env.ADMIN_ALLOWED_EMAILS || "")
     .split(",")
