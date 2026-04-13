@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Palette, Check, ArrowRight, Upload } from "lucide-react";
 import { useState, useEffect } from "react";
-import { embroideryDesignVisualizer } from "@/ai/flows/embroidery-design-visualizer";
 import Image from "next/image";
 import { Product } from "@/app/lib/mock-data";
 import { getProductsFromBackend } from "@/lib/api/products";
@@ -42,18 +41,8 @@ export default function CustomizePage() {
     setVisualizing(true);
     setVisualizationMessage(null);
     try {
-      const result = await embroideryDesignVisualizer({
-        garmentImage: selectedGarment.image,
-        embroideryDesignImage: selectedDesign.image,
-        fabricType: selectedGarment.category.toLowerCase(),
-        fabricColor: "original" // Simplifying for the flow
-      });
-      if (result.visualizedImage) {
-        setVisualizedImg(result.visualizedImage);
-      }
-      if (result.fallbackUsed) {
-        setVisualizationMessage(result.message || "AI preview is currently unavailable. Showing fallback image.");
-      }
+      setVisualizedImg(selectedGarment.image);
+      setVisualizationMessage("Live AI preview is disabled in static hosting mode. Showing base garment preview.");
     } catch (error) {
       console.error("AI Visualization failed", error);
       setVisualizationMessage("AI preview failed unexpectedly. Please try again in a few minutes.");
