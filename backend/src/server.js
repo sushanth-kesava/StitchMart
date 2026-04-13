@@ -18,7 +18,7 @@ const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: env.frontendUrl,
+    origin: env.frontendUrl, // Now set to https://antariyaofficial.com via .env
     credentials: true,
   })
 );
