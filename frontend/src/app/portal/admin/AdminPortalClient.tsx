@@ -47,7 +47,7 @@ import {
 import { formatINR, formatIndianDate, formatIndianDateTime, normalizeCatalogPriceToINR } from "@/lib/india";
 import { clearAuthSession, getPortalPathForRole } from "@/lib/auth-session";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.antariyaofficial.com/";
 
 type AdminView =
   | "operations-overview"
@@ -769,6 +769,7 @@ export default function AdminPortalClient({ activeView }: { activeView: AdminVie
                         type="file"
                         accept="image/*"
                         multiple
+                        title="Upload product images"
                         className="hidden"
                         onChange={(event) => {
                           if (event.target.files) {
