@@ -134,7 +134,7 @@ export default function AdminPortalClient({ activeView }: { activeView: AdminVie
           return;
         }
 
-        if (data.user.role !== "admin" && data.user.role !== "superadmin") {
+        if (data.user.role !== "admin") {
           setLoadingCatalog(false);
           router.replace(getPortalPathForRole(data.user.role));
           return;

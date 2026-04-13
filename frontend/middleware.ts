@@ -41,7 +41,11 @@ function canAccessPath(role: AppRole, path: string): boolean {
   }
 
   if (path.startsWith("/portal/admin")) {
-    return role === "admin" || role === "superadmin";
+    return role === "admin";
+  }
+
+  if (path.startsWith("/portal/customer")) {
+    return role === "customer";
   }
 
   return true;
@@ -61,11 +65,7 @@ export function middleware(request: NextRequest) {
   const isLoggedIn = hasAuthToken(request);
   const sessionRole = getSessionRole(request);
 
-  if (isLoggedIn && pathname.startsWith("/portal/admin") && !canAccessPath(sessionRole, pathname)) {
-    return NextResponse.redirect(new URL(getPortalPathForRole(sessionRole), request.url));
-  }
-
-  if (isLoggedIn && pathname.startsWith("/portal/superadmin") && !canAccessPath(sessionRole, pathname)) {
+  if (isLoggedIn && pathname.startsWith("/portal/") && !canAccessPath(sessionRole, pathname)) {
     return NextResponse.redirect(new URL(getPortalPathForRole(sessionRole), request.url));
   }
 

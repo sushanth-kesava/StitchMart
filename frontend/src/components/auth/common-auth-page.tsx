@@ -71,8 +71,9 @@ export default function CommonAuthPage({ mode }: { mode: AuthMode }) {
   const selectedRole = useMemo(() => normalizeRole(roleFromQuery), [roleFromQuery]);
   const selectedRoleForGoogle = selectedRole;
   const isSignup = mode === "signup";
-  const blockedSuperadminSignup = isSignup && selectedRole === "superadmin";
-  const isSuperadminCredentialsFlow = !isSignup && selectedRole === "superadmin";
+  const isPrivilegedRole = selectedRole === "admin" || selectedRole === "superadmin";
+  const blockedPrivilegedSignup = isSignup && isPrivilegedRole;
+  const isPrivilegedCredentialsFlow = !isSignup && isPrivilegedRole;
 
   useEffect(() => {
     if (isAuthenticated()) {
@@ -83,7 +84,7 @@ export default function CommonAuthPage({ mode }: { mode: AuthMode }) {
 
   const finishAuth = (token: string, user: AuthSessionUser) => {
     persistAuthSession(token, user);
-    router.replace(nextPath || getPortalPathForRole(user.role));
+    router.replace(getPortalPathForRole(user.role));
   };
 
   const googleAuth = useGoogleLogin({
@@ -156,19 +157,27 @@ export default function CommonAuthPage({ mode }: { mode: AuthMode }) {
       return;
     }
 
-    if (blockedSuperadminSignup) {
+    if (blockedPrivilegedSignup) {
+      const privilegedLabel = selectedRole === "superadmin" ? "Superadmin" : "Admin";
       toast({
-        title: "Superadmin signup is disabled",
-        description: "Use superadmin Google sign-in with an approved superadmin account.",
+        title: `${privilegedLabel} signup is disabled`,
+        description:
+          selectedRole === "superadmin"
+            ? "Use superadmin Google sign-in with an approved superadmin account."
+            : "Use admin Google sign-in to request admin access.",
         variant: "destructive",
       });
       return;
     }
 
-    if (isSuperadminCredentialsFlow) {
+    if (isPrivilegedCredentialsFlow) {
+      const privilegedLabel = selectedRole === "superadmin" ? "Superadmin" : "Admin";
       toast({
-        title: "Use Google for superadmin",
-        description: "Superadmin access is available only through approved Google accounts.",
+        title: `Use Google for ${privilegedLabel}`,
+        description:
+          selectedRole === "superadmin"
+            ? "Superadmin access is available only through approved Google accounts."
+            : "Admin access is available only through approved Google sign-in.",
         variant: "destructive",
       });
       return;
@@ -177,7 +186,7 @@ export default function CommonAuthPage({ mode }: { mode: AuthMode }) {
     try {
       setLoading(true);
 
-      const credentialsRole = selectedRole === "superadmin" ? undefined : selectedRole;
+      const credentialsRole = selectedRole;
       const result = isSignup
         ? await signupWithCredentialsOnBackend({
             email: email.trim(),
@@ -231,17 +240,21 @@ export default function CommonAuthPage({ mode }: { mode: AuthMode }) {
               </p>
             </div>
 
-            {blockedSuperadminSignup ? (
+            {blockedPrivilegedSignup ? (
               <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 flex gap-2">
                 <ShieldAlert className="h-4 w-4 mt-0.5" />
-                Superadmin signup is disabled. Use superadmin login with Google on an approved account.
+                {selectedRole === "superadmin"
+                  ? "Superadmin signup is disabled. Use superadmin login with Google on an approved account."
+                  : "Admin signup is disabled. Use admin login with Google to request access."}
               </div>
             ) : null}
 
-            {isSuperadminCredentialsFlow ? (
+            {isPrivilegedCredentialsFlow ? (
               <div className="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 flex gap-2">
                 <ShieldAlert className="h-4 w-4 mt-0.5" />
-                Superadmin login is Google-only. Use the button below.
+                {selectedRole === "superadmin"
+                  ? "Superadmin login is Google-only. Use the button below."
+                  : "Admin login is Google-only. Use the button below."}
               </div>
             ) : null}
 
@@ -287,7 +300,7 @@ export default function CommonAuthPage({ mode }: { mode: AuthMode }) {
 
               <Button
                 type="submit"
-                disabled={loading || blockedSuperadminSignup || isSuperadminCredentialsFlow}
+                disabled={loading || blockedPrivilegedSignup || isPrivilegedCredentialsFlow}
                 className="w-full h-12 rounded-full text-base font-bold"
               >
                 {loading ? (

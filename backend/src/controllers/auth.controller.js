@@ -128,14 +128,14 @@ async function loginWithGoogle(req, res, next) {
     const normalizedEmail = String(googleProfile.email).trim().toLowerCase();
     const existingAdmin = await AdminProfile.findOne({ email: normalizedEmail, active: true });
     const existingUser = await User.findOne({ email: normalizedEmail });
-    const emailAllowedAsAdmin = env.adminAllowedEmails.includes(normalizedEmail);
     const emailAllowedAsSuperAdmin = env.superAdminAllowedEmails.includes(normalizedEmail);
-    const inferredRole = existingAdmin
-      ? existingAdmin.role || "admin"
-      : selectedRole === "superadmin" && emailAllowedAsSuperAdmin
-        ? "superadmin"
-        : selectedRole === "admin" && (emailAllowedAsAdmin || emailAllowedAsSuperAdmin)
-        ? "admin"
+    const hasApprovedAdminProfile = Boolean(existingAdmin);
+    const isExistingSuperAdmin = existingAdmin?.role === "superadmin";
+    const enforcedSuperAdmin = emailAllowedAsSuperAdmin || isExistingSuperAdmin;
+    const inferredRole = enforcedSuperAdmin
+      ? "superadmin"
+      : hasApprovedAdminProfile
+        ? existingAdmin.role || "admin"
         : existingUser
           ? existingUser.role || "customer"
           : "customer";
@@ -164,15 +164,7 @@ async function loginWithGoogle(req, res, next) {
     let authDocument;
     let shouldSendWelcomeEmail = false;
 
-    if (requestedPrivilegedRole === "superadmin") {
-      const isAllowedSuperAdminEmail = emailAllowedAsSuperAdmin || (existingAdmin && existingAdmin.role === "superadmin");
-
-      if (!isAllowedSuperAdminEmail) {
-        return res.status(403).json({
-          success: false,
-          message: "This email is not allowed for superadmin access.",
-        });
-      }
+    if (enforcedSuperAdmin) {
 
       await User.deleteOne({ email: userPayload.email });
 
@@ -188,10 +180,23 @@ async function loginWithGoogle(req, res, next) {
       adminDocument.loginCount = Number(adminDocument.loginCount || 0) + 1;
       authDocument = await adminDocument.save();
       shouldSendWelcomeEmail = isNewSuperAdmin;
+    } else if (requestedPrivilegedRole === "superadmin") {
+      return res.status(403).json({
+        success: false,
+        message: "This email is not allowed for superadmin access.",
+      });
     } else if (requestedPrivilegedRole === "admin") {
-      const isAllowedPrivilegedEmail = emailAllowedAsAdmin || emailAllowedAsSuperAdmin || Boolean(existingAdmin);
+      const isEligibleForAdminRequest =
+        env.adminAllowedEmails.length === 0 || env.adminAllowedEmails.includes(normalizedEmail);
 
-      if (!isAllowedPrivilegedEmail) {
+      if (!hasApprovedAdminProfile) {
+        if (!isEligibleForAdminRequest) {
+          return res.status(403).json({
+            success: false,
+            message: "This email is not eligible for admin access request.",
+          });
+        }
+
         let request;
 
         try {
@@ -264,7 +269,7 @@ async function loginWithGoogle(req, res, next) {
       authDocument = await adminDocument.save();
       shouldSendWelcomeEmail = isNewAdmin;
     } else {
-      if (existingAdmin || inferredRole === "admin" || inferredRole === "superadmin") {
+      if (hasApprovedAdminProfile || inferredRole === "admin" || inferredRole === "superadmin") {
         const isNewAdmin = !existingAdmin;
         const adminDocument = existingAdmin || new AdminProfile({ email: userPayload.email });
         adminDocument.googleId = userPayload.googleId;
@@ -330,6 +335,13 @@ async function signupWithCredentials(req, res, next) {
     const normalizedRole = String(role || "customer").trim().toLowerCase();
     const selectedRole = normalizedRole === "admin" ? "admin" : "customer";
 
+    if (selectedRole === "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Admin signup is Google-only. Use admin login with Google to request access.",
+      });
+    }
+
     if (!normalizedEmail || !password) {
       return res.status(400).json({
         success: false,
@@ -358,39 +370,6 @@ async function signupWithCredentials(req, res, next) {
       return res.status(409).json({
         success: false,
         message: "An account with this email already exists. Please login.",
-      });
-    }
-
-    const isAllowedAdminEmail = env.adminAllowedEmails.includes(normalizedEmail);
-
-    if (selectedRole === "admin" && !isAllowedAdminEmail) {
-      const request = await AccessRequest.create({
-        requestType: "admin_approval",
-        requestedById: normalizedEmail,
-        requestedByEmail: normalizedEmail,
-        requestedByRole: "admin",
-        targetEmail: normalizedEmail,
-        targetName: normalizeDisplayName(normalizedEmail, displayName),
-        title: "Admin access request",
-        message: "An admin access request was submitted from credentials sign-up.",
-        requestedScopes: ["portal:admin", "portal:customer"],
-      });
-
-      return res.status(202).json({
-        success: true,
-        pendingApproval: true,
-        message: "Your admin request has been submitted and is pending approval.",
-        request: {
-          id: request._id,
-          status: request.status,
-        },
-        user: {
-          id: null,
-          email: normalizedEmail,
-          displayName: normalizeDisplayName(normalizedEmail, displayName),
-          photoURL: null,
-          role: "admin",
-        },
       });
     }
 
@@ -441,6 +420,13 @@ async function loginWithCredentials(req, res, next) {
     const normalizedRole = role === null || typeof role === "undefined" ? null : String(role).toLowerCase();
     const selectedRole = normalizedRole === "admin" || normalizedRole === "superadmin" || normalizedRole === "customer" ? normalizedRole : null;
 
+    if (selectedRole === "admin" || selectedRole === "superadmin") {
+      return res.status(403).json({
+        success: false,
+        message: "Admin and superadmin login is Google-only.",
+      });
+    }
+
     if (!normalizedEmail || !password) {
       return res.status(400).json({
         success: false,
@@ -468,6 +454,13 @@ async function loginWithCredentials(req, res, next) {
       return res.status(409).json({
         success: false,
         message: "This account uses Google sign-in. Please continue with Google.",
+      });
+    }
+
+    if (user.role !== "customer") {
+      return res.status(403).json({
+        success: false,
+        message: "Privileged accounts must use Google sign-in.",
       });
     }
 
