@@ -18,6 +18,8 @@
 /.next/
 /frontend/.next/
 /out/
+/frontend/.next/
+/frontend/out/
 
 # production
 /build
@@ -38,9 +40,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+/frontend/*.tsbuildinfo
 
 .genkit/*
 .env*
+/frontend/.env*
+
+# nested frontend dependencies
+/frontend/node_modules/
 
 # firebase
 firebase-debug.log
