@@ -13,7 +13,7 @@
 
     return `
       <header class="site-header">
-        <a href="${basePrefix}index.html" class="brand-mark" aria-label="Antariya Home">Antari</a>
+        <a href="${basePrefix}index.html" class="brand-mark" aria-label="Antariya Home">Antariya</a>
         <nav class="nav-links" aria-label="Primary">
           <a class="${active("home")}" href="${basePrefix}index.html">Home</a>
           <a class="${active("story")}" href="${basePrefix}story.html">Our Story</a>
