@@ -17,13 +17,23 @@ export default function Marketplace() {
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const ITEMS_PER_PAGE = 20;
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
       try {
-        const data = await getProductsFromBackend({ category: selectedCategory || undefined });
+        const { products: data, pagination } = await getProductsFromBackend({ 
+          category: selectedCategory || undefined,
+          page: 1,
+          limit: ITEMS_PER_PAGE,
+        });
         setProducts(data);
+        setCurrentPage(1);
+        setTotalPages(pagination.pages);
       } catch (error) {
         console.error("Failed to fetch products:", error);
       } finally {
@@ -32,6 +42,26 @@ export default function Marketplace() {
     }
     fetchData();
   }, [selectedCategory]);
+
+  const loadMore = async () => {
+    if (currentPage >= totalPages || loadingMore) return;
+    
+    setLoadingMore(true);
+    try {
+      const nextPage = currentPage + 1;
+      const { products: data } = await getProductsFromBackend({ 
+        category: selectedCategory || undefined,
+        page: nextPage,
+        limit: ITEMS_PER_PAGE,
+      });
+      setProducts(prev => [...prev, ...data]);
+      setCurrentPage(nextPage);
+    } catch (error) {
+      console.error("Failed to load more products", error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -80,7 +110,7 @@ export default function Marketplace() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-card border border-border/50 p-6 rounded-3xl shadow-sm">
             <div className="space-y-1">
               <h1 className="text-3xl font-bold font-headline shrink-0 tracking-tight">Catalogue</h1>
-              <p className="text-muted-foreground text-sm font-medium">Find your next project materials</p>
+              <p className="text-muted-foreground text-sm font-medium">Showing {filteredProducts.length} items</p>
             </div>
             
             <div className="flex-1 max-w-2xl w-full relative">
@@ -129,11 +159,31 @@ export default function Marketplace() {
               <p className="text-muted-foreground font-medium">Loading premium catalogue...</p>
             </div>
           ) : filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {filteredProducts.map(product => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                {filteredProducts.map(product => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+              {currentPage < totalPages && (
+                <div className="flex justify-center py-8">
+                  <Button
+                    onClick={loadMore}
+                    disabled={loadingMore}
+                    className="h-14 px-8 rounded-2xl font-bold text-lg"
+                  >
+                    {loadingMore ? (
+                      <>
+                        <RefreshCw className="inline mr-2 h-4 w-4 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      `Load More (${currentPage}/${totalPages})`
+                    )}
+                  </Button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="text-center py-32 space-y-6">
               <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto text-muted-foreground">

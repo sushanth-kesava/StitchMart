@@ -22,12 +22,12 @@ export default function CustomizePage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [apparelData, designData] = await Promise.all([
+        const [apparelResponse, designResponse] = await Promise.all([
           getProductsFromBackend({ customizable: true }),
           getProductsFromBackend({ category: "Embroidery Designs" }),
         ]);
-        setApparel(apparelData);
-        setDesigns(designData);
+        setApparel(apparelResponse.products);
+        setDesigns(designResponse.products);
       } catch (error) {
         console.error("Failed to load customization data", error);
       }

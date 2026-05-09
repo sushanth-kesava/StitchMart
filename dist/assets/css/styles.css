@@ -141,7 +141,7 @@ img {
   aspect-ratio: 1 / 1;
   background:
     linear-gradient(130deg, rgba(17, 17, 17, 0.46), rgba(17, 17, 17, 0.15)),
-    url("../images/homepage.jpg");
+    url("../images/homepage.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -674,7 +674,7 @@ h2 {
   padding: 0;
   background:
     linear-gradient(140deg, rgba(22, 20, 18, 0.35), rgba(22, 20, 18, 0.12)),
-    url("../images/1.jpg");
+    url("../images/1.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

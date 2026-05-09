@@ -14,13 +14,23 @@ export default function ShoppingPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const ITEMS_PER_PAGE = 20;
 
   useEffect(() => {
     const loadProducts = async () => {
       setLoading(true);
       try {
-        const data = await getProductsFromBackend({ customizable: true });
+        const { products: data, pagination } = await getProductsFromBackend({ 
+          customizable: true,
+          page: 1,
+          limit: ITEMS_PER_PAGE,
+        });
         setProducts(data);
+        setCurrentPage(1);
+        setTotalPages(pagination.pages);
       } catch (error) {
         console.error("Failed to fetch customizable products", error);
       } finally {
@@ -30,6 +40,26 @@ export default function ShoppingPage() {
 
     void loadProducts();
   }, []);
+
+  const loadMore = async () => {
+    if (currentPage >= totalPages || loadingMore) return;
+    
+    setLoadingMore(true);
+    try {
+      const nextPage = currentPage + 1;
+      const { products: data } = await getProductsFromBackend({ 
+        customizable: true,
+        page: nextPage,
+        limit: ITEMS_PER_PAGE,
+      });
+      setProducts(prev => [...prev, ...data]);
+      setCurrentPage(nextPage);
+    } catch (error) {
+      console.error("Failed to load more products", error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const filteredProducts = useMemo(() => {
     return products
@@ -76,7 +106,7 @@ export default function ShoppingPage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-card border border-border/50 p-6 rounded-3xl">
             <div className="space-y-1">
               <h2 className="text-3xl font-bold font-headline">Apparel Catalog</h2>
-              <p className="text-muted-foreground text-sm">Showing all customizable base garments</p>
+              <p className="text-muted-foreground text-sm">Showing {filteredProducts.length} items</p>
             </div>
             
             <div className="flex flex-1 max-w-xl w-full gap-3">
@@ -106,11 +136,31 @@ export default function ShoppingPage() {
               <p className="text-muted-foreground font-medium">Fetching premium catalogue...</p>
             </div>
           ) : filteredProducts && filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-              {filteredProducts.map(product => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+                {filteredProducts.map(product => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+              {currentPage < totalPages && (
+                <div className="flex justify-center py-8">
+                  <button
+                    onClick={loadMore}
+                    disabled={loadingMore}
+                    className="h-14 px-8 rounded-2xl bg-primary text-primary-foreground font-bold text-lg hover:bg-primary/90 disabled:opacity-50 transition-all"
+                  >
+                    {loadingMore ? (
+                      <>
+                        <RefreshCw className="inline mr-2 h-4 w-4 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      `Load More (${currentPage}/${totalPages})`
+                    )}
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="text-center py-32 space-y-6 bg-muted/30 rounded-[40px] border border-dashed border-border">
               <div className="w-24 h-24 bg-card rounded-full flex items-center justify-center mx-auto text-muted-foreground shadow-sm">

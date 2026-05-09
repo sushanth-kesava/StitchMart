@@ -17,8 +17,8 @@ export default function HoodieCatalog() {
     const loadHoodies = async () => {
       setLoading(true);
       try {
-        const data = await getProductsFromBackend({ category: "Hoodies" });
-        setHoodies(data);
+        const { products } = await getProductsFromBackend({ category: "Hoodies" });
+        setHoodies(products);
       } catch (error) {
         console.error("Failed to load hoodies", error);
       } finally {

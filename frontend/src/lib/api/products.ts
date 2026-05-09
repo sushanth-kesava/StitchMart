@@ -74,12 +74,16 @@ export async function getProductsFromBackend(filters?: {
   search?: string;
   dealerId?: string;
   customizable?: boolean;
-}): Promise<Product[]> {
+  page?: number;
+  limit?: number;
+}): Promise<{ products: Product[]; pagination: { page: number; limit: number; total: number; pages: number } }> {
   const query = toQueryString({
     category: filters?.category || undefined,
     search: filters?.search || undefined,
     dealerId: filters?.dealerId,
     customizable: typeof filters?.customizable === "boolean" ? filters.customizable : undefined,
+    page: filters?.page ? String(filters.page) : undefined,
+    limit: filters?.limit ? String(filters.limit) : undefined,
   });
 
   const response = await fetch(`${API_BASE_URL}/products${query ? `?${query}` : ""}`);
@@ -89,7 +93,10 @@ export async function getProductsFromBackend(filters?: {
     throw new Error(data?.message || "Failed to fetch products");
   }
 
-  return data.products as Product[];
+  return {
+    products: data.products as Product[],
+    pagination: data.pagination || { page: 1, limit: 20, total: 0, pages: 0 },
+  };
 }
 
 export async function getProductByIdFromBackend(id: string): Promise<Product | null> {

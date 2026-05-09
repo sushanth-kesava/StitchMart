@@ -21,8 +21,8 @@ export default function Home() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const data = await getProductsFromBackend();
-        setFeaturedProducts(data.slice(0, 4));
+        const { products } = await getProductsFromBackend();
+        setFeaturedProducts(products.slice(0, 4));
       } catch (error) {
         console.error("Failed to load products", error);
       } finally {
@@ -39,8 +39,8 @@ export default function Home() {
       description: res.message,
     });
     // Refresh data
-    const data = await getProductsFromBackend();
-    setFeaturedProducts(data.slice(0, 4));
+    const { products } = await getProductsFromBackend();
+    setFeaturedProducts(products.slice(0, 4));
   };
 
   return (

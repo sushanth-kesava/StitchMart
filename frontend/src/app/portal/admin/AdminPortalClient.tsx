@@ -155,11 +155,11 @@ export default function AdminPortalClient({ activeView }: { activeView: AdminVie
 
         setAuthToken(sessionToken);
         setAdminUser(normalizedUser);
-        const [products, adminDashboard] = await Promise.all([
+        const [productsResponse, adminDashboard] = await Promise.all([
           getProductsFromBackend({ dealerId: normalizedUser.id }),
           getAdminDashboardFromBackend(sessionToken),
         ]);
-        setCatalog(products);
+        setCatalog(productsResponse.products);
         setDashboardData(adminDashboard);
         try {
           setLoadingModeration(true);

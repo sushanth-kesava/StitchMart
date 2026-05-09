@@ -286,7 +286,11 @@ async function syncProductRating(productId) {
 
 async function getProducts(req, res, next) {
   try {
-    const { category, search, dealerId, customizable } = req.query;
+    const { category, search, dealerId, customizable, page = "1", limit = "20" } = req.query;
+
+    const pageNum = Math.max(1, Number.parseInt(String(page), 10) || 1);
+    const limitNum = Math.min(100, Math.max(1, Number.parseInt(String(limit), 10) || 20));
+    const skip = (pageNum - 1) * limitNum;
 
     const filter = {};
 
@@ -309,11 +313,20 @@ async function getProducts(req, res, next) {
       ];
     }
 
-    const products = await Product.find(filter).sort({ createdAt: -1 });
+    const [products, total] = await Promise.all([
+      Product.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limitNum),
+      Product.countDocuments(filter),
+    ]);
 
     return res.status(200).json({
       success: true,
       products: products.map(normalizeProduct),
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        pages: Math.ceil(total / limitNum),
+      },
     });
   } catch (error) {
     return next(error);

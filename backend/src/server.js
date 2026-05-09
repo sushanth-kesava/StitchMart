@@ -38,7 +38,7 @@ app.use(
   })
 );
 app.use(express.json({ limit: "1mb" }));
-app.use(morgan("dev"));
+app.use(morgan("tiny"));
 
 app.get("/", (req, res) => {
   res.status(200).json({
