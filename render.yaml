@@ -1,7 +1,24 @@
 services:
+  - type: web
+    name: antariya-backend
+    rootDir: backend
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        value: https://antariya.onrender.com
   - type: static_site
     name: antariya-frontend
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: out
     autoDeploy: true
+    envVars:
+      - key: NEXT_PUBLIC_API_BASE_URL
+        value: https://antariya-backend.onrender.com/api

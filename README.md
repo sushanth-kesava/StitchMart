@@ -117,6 +117,24 @@ git push -u origin main
 ```
 *Note: You may be asked for your GitHub username and a Personal Access Token (PAT). You can generate a PAT in your GitHub settings.*
 
+## Render Deployment
+
+This app is deployed as two services on Render:
+
+1. Backend web service: `antariya-backend`
+2. Frontend static site: `antariya-frontend`
+
+Make sure these environment variables are set in Render:
+
+1. Backend:
+   - `MONGODB_URI`
+   - `JWT_SECRET`
+   - `FRONTEND_URL=https://antariya.onrender.com`
+2. Frontend:
+   - `NEXT_PUBLIC_API_BASE_URL=https://antariya-backend.onrender.com/api`
+
+If the frontend builds without `NEXT_PUBLIC_API_BASE_URL`, it will fall back to localhost at build time and the Render site will stay stuck loading because it cannot reach the backend API.
+
 ## Getting Started
 
 1. **Configure Environment**: Add your Firebase configuration keys to a `.env` file.
