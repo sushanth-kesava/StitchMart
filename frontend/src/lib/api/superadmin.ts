@@ -1,4 +1,6 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
+import { getApiBaseUrl } from "@/lib/api/base-url";
+
+const API_BASE_URL = getApiBaseUrl();
 
 export type SuperadminRequestType = "admin_approval" | "feature_request" | "superadmin_access";
 export type SuperadminRequestStatus = "pending" | "approved" | "rejected";

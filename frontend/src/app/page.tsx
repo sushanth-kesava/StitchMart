@@ -11,9 +11,10 @@ import { ChevronRight, Zap, ShieldCheck, Truck, RefreshCcw, Loader2, CheckCircle
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getProductsFromBackend } from "@/lib/api/products";
+import { getApiBaseUrl } from "@/lib/api/base-url";
 import { useToast } from "@/hooks/use-toast";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
+const API_BASE_URL = getApiBaseUrl();
 
 type HeroMetrics = {
   products: number;

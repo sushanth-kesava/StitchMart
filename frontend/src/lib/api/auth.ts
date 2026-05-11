@@ -1,4 +1,5 @@
 import type { AppRole } from "@/lib/auth-session";
+import { getApiBaseUrl } from "@/lib/api/base-url";
 
 type GoogleAuthPayload = {
   googleAccessToken: string;
@@ -39,7 +40,7 @@ type CredentialsLoginPayload = {
   role?: AppRole;
 };
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
+const API_BASE_URL = getApiBaseUrl();
 
 export async function loginWithGoogleOnBackend(payload: GoogleAuthPayload): Promise<AuthResponse> {
   let response: Response;

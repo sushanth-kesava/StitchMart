@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { googleLogout } from "@react-oauth/google";
 import { CART_UPDATED_EVENT, getCartItemCount } from "@/lib/cart";
 import { clearAuthSession, getPortalPathForRole, normalizeAppRole, persistAuthSession } from "@/lib/auth-session";
+import { getApiBaseUrl } from "@/lib/api/base-url";
 
 type AuthUser = {
   role?: string;
@@ -26,7 +27,7 @@ type AuthUser = {
   email?: string | null;
 };
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
+const API_BASE_URL = getApiBaseUrl();
 
 export function Navbar() {
   const router = useRouter();

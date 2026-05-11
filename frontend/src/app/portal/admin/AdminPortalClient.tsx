@@ -45,10 +45,11 @@ import {
   getAdminDashboardFromBackend,
   updateAdminOrderStatusOnBackend,
 } from "@/lib/api/orders";
+import { getApiBaseUrl } from "@/lib/api/base-url";
 import { formatINR, formatIndianDate, formatIndianDateTime, normalizeCatalogPriceToINR } from "@/lib/india";
 import { clearAuthSession, getPortalPathForRole, normalizeAppRole, persistAuthSession } from "@/lib/auth-session";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
+const API_BASE_URL = getApiBaseUrl();
 
 type AdminView =
   | "operations-overview"

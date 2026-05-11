@@ -135,6 +135,10 @@ Make sure these environment variables are set in Render:
 
 If the frontend builds without `NEXT_PUBLIC_API_BASE_URL`, it will fall back to localhost at build time and the Render site will stay stuck loading because it cannot reach the backend API.
 
+For Hostinger or any other static host, also set `NEXT_PUBLIC_SITE_URL` to the final public domain before running `npm run build`, so metadata and canonical URLs are generated for the deployed site instead of localhost.
+
+To override the API after upload, edit `frontend/public/runtime-config.js` before building and set `apiBaseUrl` to your backend endpoint. If you leave it empty, the app uses the current site origin plus `/api`.
+
 ## Getting Started
 
 1. **Configure Environment**: Add your Firebase configuration keys to a `.env` file.

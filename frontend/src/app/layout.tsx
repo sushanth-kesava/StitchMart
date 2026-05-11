@@ -5,7 +5,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { BRAND_ICON_URL, BRAND_LOGO_URL } from '@/lib/brand';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://antariya.onrender.com';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -55,6 +55,7 @@ export default function RootLayout({
         <link rel="icon" href={BRAND_ICON_URL} />
         <link rel="shortcut icon" href={BRAND_ICON_URL} />
         <link rel="apple-touch-icon" href={BRAND_ICON_URL} />
+        <script src="/runtime-config.js" defer></script>
       </head>
       <body className={`${inter.variable} ${literata.variable} font-body antialiased selection:bg-primary selection:text-white`}>
         <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID"}>

@@ -12,10 +12,11 @@ import { type Product } from "@/app/lib/mock-data";
 import { getMyOrdersFromBackend } from "@/lib/api/orders";
 import { getWishlistFromBackend, WishlistItem } from "@/lib/api/wishlist";
 import { getProductsFromBackend } from "@/lib/api/products";
+import { getApiBaseUrl } from "@/lib/api/base-url";
 import { formatINR, formatIndianDate, normalizeCatalogPriceToINR } from "@/lib/india";
 import { clearAuthSession, getPortalPathForRole, normalizeAppRole, persistAuthSession } from "@/lib/auth-session";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
+const API_BASE_URL = getApiBaseUrl();
 
 type RecommendationCard = {
   product: Product;

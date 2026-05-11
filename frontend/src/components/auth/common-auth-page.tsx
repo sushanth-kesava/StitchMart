@@ -28,8 +28,6 @@ import {
 
 type AuthMode = "login" | "signup";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
-
 function sanitizeNextPath(path: string | null): string {
   const candidate = String(path || "").trim();
 
