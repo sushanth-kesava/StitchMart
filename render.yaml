@@ -1,0 +1,7 @@
+services:
+  - type: static_site
+    name: antariya-frontend
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: out
+    autoDeploy: true
