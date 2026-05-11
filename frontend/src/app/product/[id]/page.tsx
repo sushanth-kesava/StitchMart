@@ -8,18 +8,18 @@ type ProductsApiResponse = {
 export async function generateStaticParams() {
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-  if (!apiBaseUrl) {
-    return [];
-  }
-
   try {
+    if (!apiBaseUrl) {
+      throw new Error("API base URL not configured");
+    }
+
     const response = await fetch(`${apiBaseUrl}/products`, {
       method: "GET",
       cache: "no-store",
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch products for static params (${response.status})`);
+      throw new Error(`Failed to fetch products (${response.status})`);
     }
 
     const data = (await response.json()) as ProductsApiResponse;
@@ -30,11 +30,17 @@ export async function generateStaticParams() {
     if (backendIds.length > 0) {
       return backendIds.map((id) => ({ id }));
     }
-  } catch {
-    return [];
-  }
 
-  return [];
+    throw new Error("No products found in response");
+  } catch (error) {
+    console.warn(
+      "Failed to fetch products for generateStaticParams:",
+      error instanceof Error ? error.message : String(error)
+    );
+    // Fallback: return an empty ID to allow build to complete
+    // The actual product data will be fetched client-side
+    return [{ id: "placeholder" }];
+  }
 }
 
 type ProductPageProps = {
