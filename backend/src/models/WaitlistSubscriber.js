@@ -30,4 +30,4 @@ const waitlistSubscriberSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("WaitlistSubscriber", waitlistSubscriberSchema);
+module.exports = mongoose.models.WaitlistSubscriber || mongoose.model("WaitlistSubscriber", waitlistSubscriberSchema);
