@@ -45,12 +45,25 @@ export type SuperAdminAccessRequest = {
   status: SuperadminRequestStatus;
   requestedById: string;
   requestedByEmail: string;
-  requestedByRole: "customer" | "admin" | "superadmin";
+  requestedByRole: "public" | "customer" | "admin" | "superadmin";
   targetEmail: string | null;
   targetName: string | null;
   title: string;
   message: string;
   requestedScopes: string[];
+  applicationDetails: {
+    fullName: string | null;
+    email: string | null;
+    phoneNumber: string | null;
+    businessName: string | null;
+    businessType: string | null;
+    businessAddress: string | null;
+    website: string | null;
+    panNumber: string | null;
+    aadharNumber: string | null;
+    gstNumber: string | null;
+    notes: string | null;
+  } | null;
   reviewedBy: string | null;
   reviewedAt: string | null;
   reviewNote: string | null;
@@ -126,6 +139,7 @@ export async function createAccessRequestOnBackend(
     targetEmail?: string;
     targetName?: string;
     requestedScopes?: string[];
+    applicationDetails?: SuperAdminAccessRequest["applicationDetails"];
   }
 ): Promise<SuperAdminAccessRequest> {
   const response = await fetch(`${API_BASE_URL}/superadmin/access-requests`, {
@@ -141,6 +155,36 @@ export async function createAccessRequestOnBackend(
 
   if (!response.ok || !data?.success) {
     throw new Error(data?.message || "Failed to submit access request");
+  }
+
+  return data.request as SuperAdminAccessRequest;
+}
+
+export async function submitAdminApplicationOnBackend(payload: {
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  businessName: string;
+  businessType: string;
+  businessAddress: string;
+  website?: string;
+  panNumber: string;
+  aadharNumber: string;
+  gstNumber?: string;
+  notes?: string;
+}): Promise<SuperAdminAccessRequest> {
+  const response = await fetch(`${API_BASE_URL}/superadmin/admin-applications`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data?.success) {
+    throw new Error(data?.message || "Failed to submit admin application");
   }
 
   return data.request as SuperAdminAccessRequest;

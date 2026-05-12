@@ -481,6 +481,7 @@ export default function SuperAdminPortalPage() {
                     <div className="space-y-3 max-h-[540px] overflow-auto pr-1">
                       {pendingAccessRequests.map((request: SuperAdminAccessRequest) => {
                         const targetEmail = request.targetEmail || request.requestedByEmail;
+                        const applicationDetails = request.applicationDetails;
                         return (
                           <div key={request.id} className="rounded-2xl border border-gray-200 bg-gray-50 p-4 space-y-3">
                             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
@@ -496,6 +497,25 @@ export default function SuperAdminPortalPage() {
                               <p className="text-sm font-semibold text-gray-800">{request.title}</p>
                               <p className="text-sm text-gray-600 leading-relaxed">{request.message}</p>
                             </div>
+
+                            {applicationDetails ? (
+                              <div className="rounded-2xl border border-gray-200 bg-white p-4 space-y-2 text-sm text-gray-700">
+                                <p className="font-semibold text-gray-900">Application details</p>
+                                <div className="grid gap-2 sm:grid-cols-2">
+                                  <p><span className="font-medium">Applicant:</span> {applicationDetails.fullName || "-"}</p>
+                                  <p><span className="font-medium">Email:</span> {applicationDetails.email || targetEmail}</p>
+                                  <p><span className="font-medium">Phone:</span> {applicationDetails.phoneNumber || "-"}</p>
+                                  <p><span className="font-medium">Business:</span> {applicationDetails.businessName || "-"}</p>
+                                  <p><span className="font-medium">Type:</span> {applicationDetails.businessType || "-"}</p>
+                                  <p><span className="font-medium">GST:</span> {applicationDetails.gstNumber || "-"}</p>
+                                  <p><span className="font-medium">PAN:</span> {applicationDetails.panNumber || "-"}</p>
+                                  <p><span className="font-medium">Aadhar:</span> {applicationDetails.aadharNumber || "-"}</p>
+                                </div>
+                                <p><span className="font-medium">Address:</span> {applicationDetails.businessAddress || "-"}</p>
+                                {applicationDetails.website ? <p><span className="font-medium">Website:</span> {applicationDetails.website}</p> : null}
+                                {applicationDetails.notes ? <p><span className="font-medium">Notes:</span> {applicationDetails.notes}</p> : null}
+                              </div>
+                            ) : null}
 
                             <div className="flex flex-wrap gap-2 pt-1">
                               <Button

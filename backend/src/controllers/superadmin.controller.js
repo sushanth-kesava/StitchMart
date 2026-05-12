@@ -185,12 +185,104 @@ function normalizeAccessRequest(request) {
     title: request.title,
     message: request.message,
     requestedScopes: request.requestedScopes || [],
+    applicationDetails: request.applicationDetails || null,
     reviewedBy: request.reviewedBy,
     reviewedAt: request.reviewedAt,
     reviewNote: request.reviewNote,
     createdAt: request.createdAt,
     updatedAt: request.updatedAt,
   };
+}
+
+function normalizeApplicationDetails(details) {
+  if (!details || typeof details !== "object") {
+    return null;
+  }
+
+  return {
+    fullName: details.fullName ? String(details.fullName).trim() : null,
+    email: details.email ? String(details.email).trim().toLowerCase() : null,
+    phoneNumber: details.phoneNumber ? String(details.phoneNumber).trim() : null,
+    businessName: details.businessName ? String(details.businessName).trim() : null,
+    businessType: details.businessType ? String(details.businessType).trim() : null,
+    businessAddress: details.businessAddress ? String(details.businessAddress).trim() : null,
+    website: details.website ? String(details.website).trim() : null,
+    panNumber: details.panNumber ? String(details.panNumber).trim() : null,
+    aadharNumber: details.aadharNumber ? String(details.aadharNumber).trim() : null,
+    gstNumber: details.gstNumber ? String(details.gstNumber).trim() : null,
+    notes: details.notes ? String(details.notes).trim() : null,
+  };
+}
+
+function buildAdminApplicationMessage(applicationDetails) {
+  const summaryParts = [
+    applicationDetails.fullName && `Applicant: ${applicationDetails.fullName}`,
+    applicationDetails.email && `Email: ${applicationDetails.email}`,
+    applicationDetails.phoneNumber && `Phone: ${applicationDetails.phoneNumber}`,
+    applicationDetails.businessName && `Business: ${applicationDetails.businessName}`,
+    applicationDetails.businessType && `Type: ${applicationDetails.businessType}`,
+    applicationDetails.businessAddress && `Address: ${applicationDetails.businessAddress}`,
+    applicationDetails.website && `Website: ${applicationDetails.website}`,
+    applicationDetails.panNumber && `PAN: ${applicationDetails.panNumber}`,
+    applicationDetails.aadharNumber && `Aadhar: ${applicationDetails.aadharNumber}`,
+    applicationDetails.gstNumber && `GST: ${applicationDetails.gstNumber}`,
+  ].filter(Boolean);
+
+  return [
+    "Public admin access application submitted.",
+    summaryParts.length > 0 ? summaryParts.join(" | ") : null,
+    applicationDetails.notes ? `Notes: ${applicationDetails.notes}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+async function submitPublicAdminApplication(req, res, next) {
+  try {
+    const applicationDetails = normalizeApplicationDetails(req.body);
+
+    if (!applicationDetails?.fullName || !applicationDetails.email || !applicationDetails.phoneNumber) {
+      return res.status(400).json({
+        success: false,
+        message: "Full name, email, and phone number are required",
+      });
+    }
+
+    if (!applicationDetails.businessName || !applicationDetails.businessType || !applicationDetails.businessAddress) {
+      return res.status(400).json({
+        success: false,
+        message: "Business name, business type, and business address are required",
+      });
+    }
+
+    if (!applicationDetails.panNumber || !applicationDetails.aadharNumber) {
+      return res.status(400).json({
+        success: false,
+        message: "PAN and Aadhar numbers are required",
+      });
+    }
+
+    const request = await AccessRequest.create({
+      requestType: "admin_approval",
+      requestedById: applicationDetails.email,
+      requestedByEmail: applicationDetails.email,
+      requestedByRole: "public",
+      targetEmail: applicationDetails.email,
+      targetName: applicationDetails.fullName,
+      title: `${applicationDetails.businessName} admin access application`,
+      message: buildAdminApplicationMessage(applicationDetails),
+      requestedScopes: ["portal:admin"],
+      applicationDetails,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Admin application submitted",
+      request: normalizeAccessRequest(request),
+    });
+  } catch (error) {
+    return next(error);
+  }
 }
 
 function normalizeManagedAccount({ email, role, source, active }) {
@@ -268,7 +360,7 @@ async function createAccessRequest(req, res, next) {
       });
     }
 
-    const { requestType, title, message, targetEmail, targetName, requestedScopes = [] } = req.body;
+    const { requestType, title, message, targetEmail, targetName, requestedScopes = [], applicationDetails } = req.body;
     const validTypes = new Set(["admin_approval", "feature_request"]);
 
     if (!validTypes.has(requestType)) {
@@ -298,6 +390,7 @@ async function createAccessRequest(req, res, next) {
     const normalizedScopes = Array.isArray(requestedScopes)
       ? requestedScopes.map((value) => String(value).trim()).filter(Boolean)
       : [];
+    const normalizedApplicationDetails = normalizeApplicationDetails(applicationDetails);
 
     let request;
     if (requestType === "admin_approval" && normalizedTargetEmail) {
@@ -319,6 +412,7 @@ async function createAccessRequest(req, res, next) {
               title: normalizedTitle,
               message: normalizedMessage,
               requestedScopes: normalizedScopes,
+              applicationDetails: normalizedApplicationDetails,
             },
           },
           {
@@ -348,6 +442,7 @@ async function createAccessRequest(req, res, next) {
         title: normalizedTitle,
         message: normalizedMessage,
         requestedScopes: normalizedScopes,
+          applicationDetails: normalizedApplicationDetails,
       });
     }
 
@@ -570,6 +665,7 @@ async function updateUserRole(req, res, next) {
 
 module.exports = {
   getSuperAdminDashboard,
+  submitPublicAdminApplication,
   createAccessRequest,
   listAccessRequests,
   reviewAccessRequest,

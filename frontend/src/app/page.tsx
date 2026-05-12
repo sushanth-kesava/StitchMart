@@ -7,12 +7,12 @@ import { Footer } from "@/components/footer";
 import { ProductCard } from "@/components/product-card";
 import { CATEGORIES, Product } from "@/app/lib/mock-data";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Zap, ShieldCheck, Truck, RefreshCcw, Loader2, CheckCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ChevronRight, Zap, ShieldCheck, Truck, RefreshCcw, ArrowRight, FileText } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getProductsFromBackend } from "@/lib/api/products";
 import { getApiBaseUrl } from "@/lib/api/base-url";
-import { useToast } from "@/hooks/use-toast";
 
 const API_BASE_URL = getApiBaseUrl();
 
@@ -28,12 +28,6 @@ export default function Home() {
   const [heroProduct, setHeroProduct] = useState<Product | null>(null);
   const [heroMetrics, setHeroMetrics] = useState<HeroMetrics>({ products: 0, dealers: 0, categories: 0, orders: 0 });
   const [loading, setLoading] = useState(true);
-  const [upgradeEmail, setUpgradeEmail] = useState("");
-  const [upgradeName, setUpgradeName] = useState("");
-  const [upgradeLoading, setUpgradeLoading] = useState(false);
-  const [upgradeSuccess, setUpgradeSuccess] = useState(false);
-  const [upgradeError, setUpgradeError] = useState<string | null>(null);
-  const { toast } = useToast();
 
   useEffect(() => {
     async function fetchData() {
@@ -80,51 +74,6 @@ export default function Home() {
     }
     fetchData();
   }, []);
-
-  const handleUpgradeRequest = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const email = upgradeEmail.trim().toLowerCase();
-    const name = upgradeName.trim();
-
-    if (!email || !name) {
-      setUpgradeError("Please enter your name and email.");
-      return;
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setUpgradeError("Please enter a valid email address.");
-      return;
-    }
-
-    setUpgradeLoading(true);
-    setUpgradeError(null);
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/waitlist/subscribe`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, source: "admin_upgrade_request" }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data?.success) {
-        throw new Error(data?.message || "Request failed. Please try again.");
-      }
-
-      setUpgradeSuccess(true);
-      setUpgradeEmail("");
-      setUpgradeName("");
-      toast({
-        title: "Request sent!",
-        description: "We've received your admin upgrade request and will follow up by email.",
-      });
-    } catch (err) {
-      setUpgradeError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
-    } finally {
-      setUpgradeLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -237,70 +186,41 @@ export default function Home() {
         {/* Admin Upgrade Request */}
         <section className="py-20">
           <div className="w-full max-w-[1760px] mx-auto px-3 sm:px-4 lg:px-6">
-            <div className="bg-secondary rounded-3xl p-8 lg:p-16 flex flex-col lg:flex-row items-center gap-12 relative overflow-hidden shadow-2xl">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-              <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-              
-              <div className="flex-1 space-y-6 text-white text-center lg:text-left relative z-10">
-                <h2 className="text-4xl lg:text-5xl font-bold font-theseasons">Request Admin Access Upgrade</h2>
-                <p className="text-white/80 text-lg">Enter your mail ID and request an upgrade from customer access to admin access. We will review the request and follow up by email.</p>
-                <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground rounded-full px-10">
-                  <Link href="/admin-login" className="flex items-center gap-2">Admin Login</Link>
-                </Button>
-              </div>
-              
-              <div className="flex-1 w-full max-w-md bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 relative z-10">
-                {upgradeSuccess ? (
-                  <div className="flex flex-col items-center justify-center gap-4 py-4 text-center">
-                    <CheckCircle className="h-12 w-12 text-accent" />
-                    <h3 className="text-white font-bold text-xl">Request Received!</h3>
-                    <p className="text-white/70 text-sm">We&apos;ll review your request and follow up at the email you provided.</p>
-                    <Button
-                      variant="ghost"
-                      className="text-white/70 hover:text-white text-xs underline"
-                      onClick={() => setUpgradeSuccess(false)}
-                    >
-                      Submit another request
+            <div className="relative overflow-hidden bg-gradient-to-br from-stone-950 via-red-950 to-amber-900 rounded-3xl p-8 lg:p-16 shadow-2xl border border-stone-900/20">
+              <div className="absolute top-0 right-0 w-72 h-72 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+              <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+
+              <div className="relative z-10 grid gap-8 lg:grid-cols-[1.2fr_0.8fr] items-center">
+                <div className="space-y-6 text-white text-center lg:text-left">
+                  <Badge className="rounded-full bg-white/10 text-white border-white/10 hover:bg-white/10 w-fit mx-auto lg:mx-0">
+                    Admin access application
+                  </Badge>
+                  <h2 className="text-4xl lg:text-5xl font-black font-theseasons">Apply for admin access from one place</h2>
+                  <p className="text-white/80 text-lg max-w-2xl mx-auto lg:mx-0">
+                    Existing admins can log in from the admin portal. New applicants now submit their business and identity details through a dedicated application page, and the request appears in the superadmin dashboard for review.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+                    <Button size="lg" className="bg-white text-stone-950 hover:bg-stone-100 rounded-full px-10" asChild>
+                      <Link href="/admin-login" className="flex items-center gap-2">
+                        Admin Login <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <Button size="lg" variant="outline" className="rounded-full px-10 border-white/20 text-white bg-white/5 hover:bg-white/10" asChild>
+                      <Link href="/admin-login/apply" className="flex items-center gap-2">
+                        Apply Now <FileText className="h-4 w-4" />
+                      </Link>
                     </Button>
                   </div>
-                ) : (
-                  <>
-                    <h3 className="text-white font-bold text-xl mb-4">Admin Access Upgrade Request</h3>
-                    <form onSubmit={handleUpgradeRequest} className="space-y-4">
-                      <input
-                        type="text"
-                        placeholder="Your full name"
-                        value={upgradeName}
-                        onChange={(e) => setUpgradeName(e.target.value)}
-                        required
-                        className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-accent"
-                      />
-                      <input
-                        type="email"
-                        placeholder="Enter your mail ID"
-                        value={upgradeEmail}
-                        onChange={(e) => setUpgradeEmail(e.target.value)}
-                        required
-                        className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-accent"
-                      />
-                      {upgradeError && <p className="text-red-300 text-xs">{upgradeError}</p>}
-                      <Button
-                        type="submit"
-                        className="w-full bg-white text-secondary hover:bg-white/90 rounded-full"
-                        disabled={upgradeLoading}
-                      >
-                        {upgradeLoading ? (
-                          <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</>
-                        ) : (
-                          "Send Request"
-                        )}
-                      </Button>
-                      <p className="text-xs text-white/60 text-center">
-                        Use the email linked to your customer account so we can verify the upgrade request.
-                      </p>
-                    </form>
-                  </>
-                )}
+                </div>
+
+                <div className="rounded-3xl border border-white/15 bg-white/10 backdrop-blur-md p-6 sm:p-8 text-white space-y-4 shadow-xl">
+                  <h3 className="font-bold text-xl">What the application includes</h3>
+                  <div className="grid gap-3 text-sm text-white/85">
+                    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">Business name, address, and business type</div>
+                    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">Applicant name, email, and phone number</div>
+                    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">PAN, Aadhar, GST, and notes for superadmin review</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

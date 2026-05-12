@@ -303,9 +303,16 @@ export default function CommonAuthPage({ mode }: { mode: AuthMode }) {
             {blockedPrivilegedSignup ? (
               <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 flex gap-2">
                 <ShieldAlert className="h-4 w-4 mt-0.5" />
-                {selectedRole === "superadmin"
-                  ? "Superadmin signup is disabled. Use superadmin login with Google on an approved account."
-                  : "Admin signup is disabled. Use admin login with Google to request access."}
+                <span>
+                  {selectedRole === "superadmin"
+                    ? "Superadmin signup is disabled. Use superadmin login with Google on an approved account."
+                    : "Admin signup now uses a dedicated application form."}{" "}
+                  {selectedRole === "admin" ? (
+                    <Link href="/admin-login/apply" className="font-semibold underline underline-offset-2">
+                      Open the application page
+                    </Link>
+                  ) : null}
+                </span>
               </div>
             ) : null}
 
