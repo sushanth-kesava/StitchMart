@@ -5,6 +5,90 @@ const Order = require("../models/Order");
 const Product = require("../models/Product");
 const Review = require("../models/Review");
 const WishlistItem = require("../models/WishlistItem");
+const env = require("../config/env");
+
+function normalizeEmail(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function resolveRegisteredPortalByEmail(email) {
+  const normalizedEmail = normalizeEmail(email);
+
+  if (!normalizedEmail) {
+    return "customer";
+  }
+
+  if (env.superAdminAllowedEmails.includes(normalizedEmail)) {
+    return "superadmin";
+  }
+
+  if (env.adminAllowedEmails.includes(normalizedEmail)) {
+    return "admin";
+  }
+
+  return "customer";
+}
+
+function buildPortalClassificationAudit(adminProfiles, customerProfiles) {
+  const accountsByEmail = new Map();
+
+  adminProfiles.forEach((profile) => {
+    const email = normalizeEmail(profile.email);
+
+    if (!email) {
+      return;
+    }
+
+    accountsByEmail.set(email, {
+      email,
+      source: "admin_profile",
+      currentRole: profile.role === "superadmin" ? "superadmin" : "admin",
+      active: Boolean(profile.active),
+    });
+  });
+
+  customerProfiles.forEach((profile) => {
+    const email = normalizeEmail(profile.email);
+
+    if (!email) {
+      return;
+    }
+
+    if (!accountsByEmail.has(email)) {
+      accountsByEmail.set(email, {
+        email,
+        source: "user",
+        currentRole: "customer",
+        active: true,
+      });
+    }
+  });
+
+  const accounts = [...accountsByEmail.values()].map((account) => {
+    const registeredPortal = resolveRegisteredPortalByEmail(account.email);
+    const mismatch = account.currentRole !== registeredPortal;
+
+    return {
+      email: account.email,
+      source: account.source,
+      currentRole: account.currentRole,
+      registeredPortal,
+      active: account.active,
+      mismatch,
+      reason: mismatch
+        ? `Current role is ${account.currentRole} but Gmail allowlist maps to ${registeredPortal}.`
+        : "Role matches registered portal.",
+    };
+  });
+
+  const mismatches = accounts.filter((account) => account.mismatch).length;
+
+  return {
+    totalAccounts: accounts.length,
+    mismatches,
+    accounts,
+  };
+}
 
 function ensureSuperAdmin(req, res) {
   if (req.auth?.role !== "superadmin") {
@@ -109,6 +193,9 @@ async function getSuperAdminDashboard(req, res, next) {
     ]);
 
     const totalRevenue = Number(totalRevenueStats?.[0]?.totalRevenue || 0);
+    const normalizedAdminProfiles = adminProfiles.map(normalizeAdminProfile);
+    const normalizedCustomerProfiles = customerProfiles.map(normalizeCustomerProfile);
+    const portalClassificationAudit = buildPortalClassificationAudit(normalizedAdminProfiles, normalizedCustomerProfiles);
 
     return res.status(200).json({
       success: true,
@@ -123,9 +210,10 @@ async function getSuperAdminDashboard(req, res, next) {
         pendingReviews,
         wishlistItems,
       },
-      adminProfiles: adminProfiles.map(normalizeAdminProfile),
-      customerProfiles: customerProfiles.map(normalizeCustomerProfile),
+      adminProfiles: normalizedAdminProfiles,
+      customerProfiles: normalizedCustomerProfiles,
       accessRequests: recentRequests.map(normalizeAccessRequest),
+      portalClassificationAudit,
     });
   } catch (error) {
     return next(error);

@@ -24,6 +24,7 @@ import {
 import {
   getSuperAdminDashboardFromBackend,
   ManagedRole,
+  PortalClassificationAuditAccount,
   reviewAccessRequestOnBackend,
   SuperAdminAccessRequest,
   SuperAdminCustomerProfile,
@@ -267,6 +268,7 @@ export default function SuperAdminPortalPage() {
 
   const adminProfiles = dashboard?.adminProfiles || [];
   const customerProfiles = dashboard?.customerProfiles || [];
+  const portalAudit = dashboard?.portalClassificationAudit;
   const getPortalLabel = (role: "customer" | "admin" | "superadmin") => {
     if (role === "superadmin") {
       return "Superadmin Portal";
@@ -550,6 +552,54 @@ export default function SuperAdminPortalPage() {
                 <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
                   <p className="text-xs uppercase tracking-wide text-gray-500 font-semibold">Total Orders</p>
                   <p className="mt-2 text-2xl font-black text-gray-900 flex items-center gap-2"><ShoppingCart className="h-5 w-5" />{dashboard?.summary.totalOrders || 0}</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-[28px] border-gray-100 shadow-sm bg-white">
+              <CardHeader>
+                <CardTitle className="text-xl flex items-center gap-2"><Shield className="h-5 w-5 text-slate-700" /> Portal Classification Audit</CardTitle>
+                <CardDescription>
+                  Gmail-based portal mapping report. Accounts marked mismatch are not aligned with their registered portal.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-wrap items-center gap-3">
+                  <Badge className="rounded-full bg-slate-100 text-slate-800 hover:bg-slate-100">
+                    Accounts: {portalAudit?.totalAccounts || 0}
+                  </Badge>
+                  <Badge
+                    className={`rounded-full ${Number(portalAudit?.mismatches || 0) > 0 ? "bg-red-100 text-red-800 hover:bg-red-100" : "bg-emerald-100 text-emerald-800 hover:bg-emerald-100"}`}
+                  >
+                    Mismatches: {portalAudit?.mismatches || 0}
+                  </Badge>
+                </div>
+
+                <div className="space-y-2 max-h-72 overflow-auto pr-1">
+                  {(portalAudit?.accounts || []).map((account: PortalClassificationAuditAccount) => (
+                    <div
+                      key={account.email}
+                      className={`rounded-xl border px-3 py-2 ${account.mismatch ? "border-red-200 bg-red-50" : "border-gray-200 bg-gray-50"}`}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-sm font-semibold text-gray-900">{account.email}</p>
+                        <Badge
+                          variant="outline"
+                          className={`rounded-full ${account.mismatch ? "border-red-300 text-red-700" : "border-emerald-300 text-emerald-700"}`}
+                        >
+                          {account.mismatch ? "Mismatch" : "Match"}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-gray-600 mt-1">
+                        Current: {account.currentRole} • Registered portal: {account.registeredPortal} • Source: {account.source}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">{account.reason}</p>
+                    </div>
+                  ))}
+
+                  {(portalAudit?.accounts || []).length === 0 ? (
+                    <p className="text-sm text-gray-500">No accounts available for audit.</p>
+                  ) : null}
                 </div>
               </CardContent>
             </Card>

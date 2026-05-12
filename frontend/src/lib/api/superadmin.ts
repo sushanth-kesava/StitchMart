@@ -63,6 +63,23 @@ export type SuperAdminDashboardPayload = {
   adminProfiles: SuperAdminProfile[];
   customerProfiles: SuperAdminCustomerProfile[];
   accessRequests: SuperAdminAccessRequest[];
+  portalClassificationAudit: PortalClassificationAudit;
+};
+
+export type PortalClassificationAuditAccount = {
+  email: string;
+  source: "user" | "admin_profile";
+  currentRole: "customer" | "admin" | "superadmin";
+  registeredPortal: "customer" | "admin" | "superadmin";
+  active: boolean;
+  mismatch: boolean;
+  reason: string;
+};
+
+export type PortalClassificationAudit = {
+  totalAccounts: number;
+  mismatches: number;
+  accounts: PortalClassificationAuditAccount[];
 };
 
 export type ManagedRole = "customer" | "admin";
@@ -92,6 +109,11 @@ export async function getSuperAdminDashboardFromBackend(token: string): Promise<
     adminProfiles: (data.adminProfiles || []) as SuperAdminProfile[],
     customerProfiles: (data.customerProfiles || []) as SuperAdminCustomerProfile[],
     accessRequests: (data.accessRequests || []) as SuperAdminAccessRequest[],
+    portalClassificationAudit: (data.portalClassificationAudit || {
+      totalAccounts: 0,
+      mismatches: 0,
+      accounts: [],
+    }) as PortalClassificationAudit,
   };
 }
 
